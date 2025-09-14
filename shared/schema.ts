@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, timestamp, boolean } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, timestamp, boolean, integer } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -20,6 +20,18 @@ export const registrations = pgTable("registrations", {
   usthaadName: text("usthaad_name").notNull(),
   category: varchar("category", { length: 10 }).notNull(), // 'junior' or 'senior'
   programs: text("programs").array().notNull(), // Array of selected programs
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const programs = pgTable("programs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  programId: text("program_id").notNull().unique(), // e.g., "junior-qiraat"
+  name: text("name").notNull(), // Display name in Malayalam
+  category: varchar("category", { length: 10 }).notNull(), // 'junior' or 'senior'
+  type: varchar("type", { length: 20 }).notNull(), // 'stage' or 'non-stage'
+  isActive: boolean("is_active").default(true).notNull(),
+  displayOrder: integer("display_order").default(0).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -50,5 +62,20 @@ export interface Statistics {
   senior: number;
   today: number;
 }
+export const insertProgramSchema = createInsertSchema(programs).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  programId: z.string().min(1, "Program ID is required"),
+  name: z.string().min(1, "Program name is required"),
+  category: z.enum(["junior", "senior"]),
+  type: z.enum(["stage", "non-stage"]),
+  displayOrder: z.number().min(0).default(0),
+});
+
 export type InsertRegistration = z.infer<typeof insertRegistrationSchema>;
 export type Registration = typeof registrations.$inferSelect;
+
+export type InsertProgram = z.infer<typeof insertProgramSchema>;
+export type Program = typeof programs.$inferSelect;

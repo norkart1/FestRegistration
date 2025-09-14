@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { insertRegistrationSchema, type InsertRegistration } from "@shared/schema";
+import { insertRegistrationSchema, type InsertRegistration, type Program } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -13,7 +13,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Save, RotateCcw } from "lucide-react";
-import { JUNIOR_PROGRAMS, SENIOR_PROGRAMS, PROGRAM_LABELS } from "@shared/program-constants";
 
 export function RegistrationForm() {
   const [selectedCategory, setSelectedCategory] = useState<"junior" | "senior" | "">("");
@@ -71,7 +70,16 @@ export function RegistrationForm() {
   const watchedCategory = form.watch("category");
   const watchedPrograms = form.watch("programs");
 
-  const availablePrograms = watchedCategory === "junior" ? JUNIOR_PROGRAMS : SENIOR_PROGRAMS;
+  // Fetch programs from API
+  const { data: allPrograms = [], isLoading: programsLoading } = useQuery<Program[]>({
+    queryKey: ["/api/programs"],
+  });
+
+  // Filter programs by category and group by type
+  const availablePrograms = {
+    stage: allPrograms.filter(p => p.category === watchedCategory && p.type === 'stage' && p.isActive),
+    nonStage: allPrograms.filter(p => p.category === watchedCategory && p.type === 'non-stage' && p.isActive)
+  };
 
   return (
     <Form {...form}>
@@ -234,6 +242,11 @@ export function RegistrationForm() {
               <CardTitle>Program Selection</CardTitle>
             </CardHeader>
             <CardContent>
+              {programsLoading ? (
+                <div className="text-center py-8">
+                  <div className="text-muted-foreground">Loading programs...</div>
+                </div>
+              ) : (
               <FormField
                 control={form.control}
                 name="programs"
@@ -243,21 +256,21 @@ export function RegistrationForm() {
                       <div className="space-y-2">
                         <h5 className="text-sm font-medium text-muted-foreground">Stage Programs</h5>
                         {availablePrograms.stage.map((program) => (
-                          <div key={program} className="flex items-center space-x-2">
+                          <div key={program.id} className="flex items-center space-x-2">
                             <Checkbox
-                              id={program}
-                              checked={watchedPrograms.includes(program)}
+                              id={program.programId}
+                              checked={watchedPrograms.includes(program.programId)}
                               onCheckedChange={(checked) => {
                                 if (checked) {
-                                  field.onChange([...watchedPrograms, program]);
+                                  field.onChange([...watchedPrograms, program.programId]);
                                 } else {
-                                  field.onChange(watchedPrograms.filter(p => p !== program));
+                                  field.onChange(watchedPrograms.filter(p => p !== program.programId));
                                 }
                               }}
-                              data-testid={`checkbox-${program}`}
+                              data-testid={`checkbox-${program.programId}`}
                             />
-                            <Label htmlFor={program} className="text-sm cursor-pointer">
-                              {PROGRAM_LABELS[program as keyof typeof PROGRAM_LABELS]}
+                            <Label htmlFor={program.programId} className="text-sm cursor-pointer">
+                              {program.name}
                             </Label>
                           </div>
                         ))}
@@ -266,21 +279,21 @@ export function RegistrationForm() {
                       <div className="space-y-2">
                         <h5 className="text-sm font-medium text-muted-foreground">Non-Stage Programs</h5>
                         {availablePrograms.nonStage.map((program) => (
-                          <div key={program} className="flex items-center space-x-2">
+                          <div key={program.id} className="flex items-center space-x-2">
                             <Checkbox
-                              id={program}
-                              checked={watchedPrograms.includes(program)}
+                              id={program.programId}
+                              checked={watchedPrograms.includes(program.programId)}
                               onCheckedChange={(checked) => {
                                 if (checked) {
-                                  field.onChange([...watchedPrograms, program]);
+                                  field.onChange([...watchedPrograms, program.programId]);
                                 } else {
-                                  field.onChange(watchedPrograms.filter(p => p !== program));
+                                  field.onChange(watchedPrograms.filter(p => p !== program.programId));
                                 }
                               }}
-                              data-testid={`checkbox-${program}`}
+                              data-testid={`checkbox-${program.programId}`}
                             />
-                            <Label htmlFor={program} className="text-sm cursor-pointer">
-                              {PROGRAM_LABELS[program as keyof typeof PROGRAM_LABELS]}
+                            <Label htmlFor={program.programId} className="text-sm cursor-pointer">
+                              {program.name}
                             </Label>
                           </div>
                         ))}
@@ -290,6 +303,7 @@ export function RegistrationForm() {
                   </FormItem>
                 )}
               />
+              )}
             </CardContent>
           </Card>
         )}

@@ -6,11 +6,12 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
-import { GraduationCap, UserPlus, BarChart3, LogOut, Menu } from "lucide-react";
+import { GraduationCap, UserPlus, BarChart3, LogOut, Menu, Settings } from "lucide-react";
 import Login from "@/pages/login";
 import Registration from "@/pages/registration";
 import Dashboard from "@/pages/dashboard";
 import Reports from "@/pages/reports";
+import ProgramManagement from "@/pages/program-management";
 import NotFound from "@/pages/not-found";
 import { authApi } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
@@ -36,6 +37,7 @@ function Navigation({ currentPath }: { currentPath: string }) {
     { path: "/registration", label: "Registration", icon: UserPlus },
     { path: "/", label: "Dashboard", icon: BarChart3 },
     { path: "/reports", label: "Reports", icon: BarChart3 },
+    { path: "/admin/programs", label: "Programs", icon: Settings },
   ];
 
   return (
@@ -90,6 +92,7 @@ function AuthenticatedApp() {
         <Switch>
           <Route path="/registration" component={Registration} />
           <Route path="/reports" component={Reports} />
+          <Route path="/admin/programs" component={ProgramManagement} />
           <Route path="/" component={Dashboard} />
           <Route component={NotFound} />
         </Switch>
