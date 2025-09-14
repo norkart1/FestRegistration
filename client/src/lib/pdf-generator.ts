@@ -2,26 +2,13 @@ import { jsPDF } from 'jspdf';
 import { autoTable, UserOptions } from 'jspdf-autotable';
 import { Registration } from '@shared/schema';
 
-// Malayalam font base64 - using a subset of Noto Sans Malayalam for essential characters
-const malayalamFontBase64 = "data:font/truetype;charset=utf-8;base64,AAEAAAAUAQAABAAwR1BPUzMSbNsAACW4AAAOUUdTVUIxanVvAAA2CAAAAOxPUy8ykEhlDAAAWAAAAGBjbWFwvyaWJQAACLgAAAJYZ2x5ZpBRkuUAAA24AAAXrGhlYWQM8y5vAAAA/AAAADZoaGVhCOcESgAAATQAAAAkaG10eE8AqrQAAAFYAAABTGxvY2GkpKLcAAACpAAAAKhtYXhwADgAYwAAAwwAAAAgbmFtZRudOGoAAAMsAAAFjHBvc3QAAwAAAAgAAAgFAAAAAQAEBAAABQAAAJ0AAAACAAEAAQAAAEAAMAABAAIAAAABAAHgAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAEAAgABAAIAAAABAAIAAgABAAA+AAAAKQABAAIAAAIBAAAGAAAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAA=";
-
-// Utility function to add Malayalam font to PDF
-const addMalayalamFont = (doc: jsPDF): void => {
+// Utility function to set safe font
+const setSafeFont = (doc: jsPDF): void => {
   try {
-    // Convert data URL to base64
-    const base64Data = malayalamFontBase64.split(',')[1];
-    
-    // Add font to virtual file system
-    doc.addFileToVFS('NotoSansMalayalam.ttf', base64Data);
-    
-    // Register the font
-    doc.addFont('NotoSansMalayalam.ttf', 'NotoSansMalayalam', 'normal');
-    
-    // Set as default font for Malayalam text
-    doc.setFont('NotoSansMalayalam', 'normal');
-  } catch (error) {
-    console.warn('Failed to load Malayalam font, falling back to default:', error);
+    // Use a standard font that's guaranteed to work
     doc.setFont('helvetica', 'normal');
+  } catch (error) {
+    console.warn('Font setting failed, using default:', error);
   }
 };
 
@@ -32,14 +19,12 @@ export const generateRegistrationPDF = (registration: Registration) => {
     format: 'a4'
   });
 
-  // Header with Malayalam font support
-  addMalayalamFont(doc);
+  // Header with safe font
+  setSafeFont(doc);
   doc.setFontSize(18);
-  doc.setFont('NotoSansMalayalam', 'normal');
   doc.text('Registration Management System', 148.5, 20, { align: 'center' });
   
   doc.setFontSize(14);
-  doc.setFont('NotoSansMalayalam', 'normal');
   doc.text('Student Registration Details', 148.5, 30, { align: 'center' });
 
   // Student Information
@@ -47,7 +32,7 @@ export const generateRegistrationPDF = (registration: Registration) => {
     ['Full Name', registration.fullName],
     ['Aadhar Number', registration.aadharNumber],
     ['Place', registration.place],
-    ['Instructor Phone Number', registration.phoneNumber],
+    ['Usthad Number', registration.phoneNumber],
     ['Category', registration.category.toUpperCase()],
     ['Dars Name', registration.darsName],
     ['Dars Place', registration.darsPlace],
@@ -56,24 +41,17 @@ export const generateRegistrationPDF = (registration: Registration) => {
     ['Registration Date', new Date(registration.createdAt).toLocaleDateString()]
   ];
 
-  // Add Malayalam font support
-  addMalayalamFont(doc);
-
   autoTable(doc, {
     startY: 50,
     head: [['Field', 'Value']],
     body: studentData,
     styles: {
       fontSize: 10,
-      cellPadding: 3,
-      font: 'NotoSansMalayalam',
-      fontStyle: 'normal'
+      cellPadding: 3
     },
     headStyles: {
       fillColor: [59, 130, 246],
-      textColor: [255, 255, 255],
-      font: 'NotoSansMalayalam',
-      fontStyle: 'normal'
+      textColor: [255, 255, 255]
     },
     alternateRowStyles: {
       fillColor: [248, 250, 252]
@@ -91,19 +69,16 @@ export const generateCategoryReport = (registrations: Registration[], category: 
     format: 'a4'
   });
 
-  // Header with Malayalam font support
-  addMalayalamFont(doc);
+  // Header with safe font
+  setSafeFont(doc);
   doc.setFontSize(18);
-  doc.setFont('NotoSansMalayalam', 'normal');
   doc.text('Registration Management System', 148.5, 20, { align: 'center' });
   
   doc.setFontSize(14);
-  doc.setFont('NotoSansMalayalam', 'normal');
   doc.text(`${category.toUpperCase()} Student Registration Report`, 148.5, 30, { align: 'center' });
 
   // Summary
   doc.setFontSize(12);
-  doc.setFont('NotoSansMalayalam', 'normal');
   doc.text(`Total ${category} Students: ${registrations.length}`, 20, 45);
   doc.text(`Report Generated: ${new Date().toLocaleDateString()}`, 20, 55);
 
@@ -119,24 +94,17 @@ export const generateCategoryReport = (registrations: Registration[], category: 
     new Date(reg.createdAt).toLocaleDateString()
   ]);
 
-  // Add Malayalam font support
-  addMalayalamFont(doc);
-
   autoTable(doc, {
     startY: 70,
-    head: [['Name', 'Aadhar', 'Instructor Phone', 'Place', 'Dars', 'Usthaad', 'Programs', 'Date']],
+    head: [['Name', 'Aadhar', 'Usthad Phone', 'Place', 'Dars', 'Usthaad', 'Programs', 'Date']],
     body: tableData,
     styles: {
       fontSize: 8,
-      cellPadding: 2,
-      font: 'NotoSansMalayalam',
-      fontStyle: 'normal'
+      cellPadding: 2
     },
     headStyles: {
       fillColor: [59, 130, 246],
-      textColor: [255, 255, 255],
-      font: 'NotoSansMalayalam',
-      fontStyle: 'normal'
+      textColor: [255, 255, 255]
     },
     alternateRowStyles: {
       fillColor: [248, 250, 252]

@@ -33,7 +33,7 @@ export function ViewModal({ registration, onClose }: ViewModalProps) {
               <CardTitle className="text-lg">Basic Information</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid md:grid-cols-2 gap-4">
+              <div className="grid md:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-muted-foreground">Full Name</label>
                   <p className="text-card-foreground" data-testid="text-view-fullName">{registration.fullName}</p>
@@ -45,10 +45,6 @@ export function ViewModal({ registration, onClose }: ViewModalProps) {
                 <div>
                   <label className="block text-sm font-medium text-muted-foreground">Place</label>
                   <p className="text-card-foreground" data-testid="text-view-place">{registration.place}</p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-muted-foreground">Instructor Phone Number</label>
-                  <p className="text-card-foreground" data-testid="text-view-phone">{registration.phoneNumber}</p>
                 </div>
               </div>
             </CardContent>
@@ -70,9 +66,15 @@ export function ViewModal({ registration, onClose }: ViewModalProps) {
                   <p className="text-card-foreground" data-testid="text-view-darsPlace">{registration.darsPlace}</p>
                 </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-muted-foreground">Usthaad Name</label>
-                <p className="text-card-foreground" data-testid="text-view-usthaad">{registration.usthaadName}</p>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-muted-foreground">Usthaad Name</label>
+                  <p className="text-card-foreground" data-testid="text-view-usthaad">{registration.usthaadName}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-muted-foreground">Usthad Number</label>
+                  <p className="text-card-foreground" data-testid="text-view-phone">{registration.phoneNumber}</p>
+                </div>
               </div>
             </CardContent>
           </Card>

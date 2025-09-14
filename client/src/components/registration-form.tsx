@@ -115,7 +115,7 @@ export function RegistrationForm() {
           />
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid md:grid-cols-1 gap-6">
           <FormField
             control={form.control}
             name="place"
@@ -124,20 +124,6 @@ export function RegistrationForm() {
                 <FormLabel>Place *</FormLabel>
                 <FormControl>
                   <Input {...field} placeholder="Enter your place" data-testid="input-place" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="phoneNumber"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Instructor Phone Number *</FormLabel>
-                <FormControl>
-                  <Input {...field} placeholder="Enter instructor's 10-digit phone number" maxLength={10} data-testid="input-phoneNumber" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -181,19 +167,35 @@ export function RegistrationForm() {
               />
             </div>
             
-            <FormField
-              control={form.control}
-              name="usthaadName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Usthaad Name *</FormLabel>
-                  <FormControl>
-                    <Input {...field} placeholder="Enter Usthaad name" data-testid="input-usthaadName" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="grid md:grid-cols-2 gap-6">
+              <FormField
+                control={form.control}
+                name="usthaadName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Usthaad Name *</FormLabel>
+                    <FormControl>
+                      <Input {...field} placeholder="Enter Usthaad name" data-testid="input-usthaadName" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="phoneNumber"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Usthad Number *</FormLabel>
+                    <FormControl>
+                      <Input {...field} placeholder="Enter Usthad's 10-digit number" maxLength={10} data-testid="input-phoneNumber" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
           </CardContent>
         </Card>
 
