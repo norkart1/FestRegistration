@@ -1,0 +1,96 @@
+import { registrations, users, type User, type InsertUser, type Registration, type InsertRegistration } from "@shared/schema";
+import { db } from "./db";
+import { eq, desc, ilike, or } from "drizzle-orm";
+
+export interface IStorage {
+  getUser(id: string): Promise<User | undefined>;
+  getUserByUsername(username: string): Promise<User | undefined>;
+  createUser(user: InsertUser): Promise<User>;
+  
+  // Registration methods
+  createRegistration(registration: InsertRegistration): Promise<Registration>;
+  getRegistrations(): Promise<Registration[]>;
+  getRegistration(id: string): Promise<Registration | undefined>;
+  updateRegistration(id: string, registration: Partial<InsertRegistration>): Promise<Registration | undefined>;
+  deleteRegistration(id: string): Promise<boolean>;
+  getRegistrationsByCategory(category: 'junior' | 'senior'): Promise<Registration[]>;
+  searchRegistrations(query: string): Promise<Registration[]>;
+}
+
+export class DatabaseStorage implements IStorage {
+  async getUser(id: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user || undefined;
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values(insertUser)
+      .returning();
+    return user;
+  }
+
+  async createRegistration(registration: InsertRegistration): Promise<Registration> {
+    const [newRegistration] = await db
+      .insert(registrations)
+      .values({
+        ...registration,
+        updatedAt: new Date(),
+      })
+      .returning();
+    return newRegistration;
+  }
+
+  async getRegistrations(): Promise<Registration[]> {
+    return db.select().from(registrations).orderBy(desc(registrations.createdAt));
+  }
+
+  async getRegistration(id: string): Promise<Registration | undefined> {
+    const [registration] = await db.select().from(registrations).where(eq(registrations.id, id));
+    return registration || undefined;
+  }
+
+  async updateRegistration(id: string, registration: Partial<InsertRegistration>): Promise<Registration | undefined> {
+    const [updated] = await db
+      .update(registrations)
+      .set({
+        ...registration,
+        updatedAt: new Date(),
+      })
+      .where(eq(registrations.id, id))
+      .returning();
+    return updated || undefined;
+  }
+
+  async deleteRegistration(id: string): Promise<boolean> {
+    const result = await db.delete(registrations).where(eq(registrations.id, id));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  async getRegistrationsByCategory(category: 'junior' | 'senior'): Promise<Registration[]> {
+    return db.select().from(registrations)
+      .where(eq(registrations.category, category))
+      .orderBy(desc(registrations.createdAt));
+  }
+
+  async searchRegistrations(query: string): Promise<Registration[]> {
+    return db.select().from(registrations)
+      .where(
+        or(
+          ilike(registrations.fullName, `%${query}%`),
+          ilike(registrations.aadharNumber, `%${query}%`),
+          ilike(registrations.phoneNumber, `%${query}%`),
+          ilike(registrations.place, `%${query}%`)
+        )
+      )
+      .orderBy(desc(registrations.createdAt));
+  }
+}
+
+export const storage = new DatabaseStorage();
