@@ -47,7 +47,7 @@ export const generateRegistrationPDF = (registration: Registration) => {
     ['Full Name', registration.fullName],
     ['Aadhar Number', registration.aadharNumber],
     ['Place', registration.place],
-    ['Phone Number', registration.phoneNumber],
+    ['Instructor Phone Number', registration.phoneNumber],
     ['Category', registration.category.toUpperCase()],
     ['Dars Name', registration.darsName],
     ['Dars Place', registration.darsPlace],
@@ -124,7 +124,7 @@ export const generateCategoryReport = (registrations: Registration[], category: 
 
   autoTable(doc, {
     startY: 70,
-    head: [['Name', 'Aadhar', 'Phone', 'Place', 'Dars', 'Usthaad', 'Programs', 'Date']],
+    head: [['Name', 'Aadhar', 'Instructor Phone', 'Place', 'Dars', 'Usthaad', 'Programs', 'Date']],
     body: tableData,
     styles: {
       fontSize: 8,

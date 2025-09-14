@@ -135,9 +135,9 @@ export function RegistrationForm() {
             name="phoneNumber"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Phone Number *</FormLabel>
+                <FormLabel>Instructor Phone Number *</FormLabel>
                 <FormControl>
-                  <Input {...field} placeholder="Enter 10-digit phone number" maxLength={10} data-testid="input-phoneNumber" />
+                  <Input {...field} placeholder="Enter instructor's 10-digit phone number" maxLength={10} data-testid="input-phoneNumber" />
                 </FormControl>
                 <FormMessage />
               </FormItem>

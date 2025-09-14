@@ -47,7 +47,7 @@ export function ViewModal({ registration, onClose }: ViewModalProps) {
                   <p className="text-card-foreground" data-testid="text-view-place">{registration.place}</p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-muted-foreground">Phone Number</label>
+                  <label className="block text-sm font-medium text-muted-foreground">Instructor Phone Number</label>
                   <p className="text-card-foreground" data-testid="text-view-phone">{registration.phoneNumber}</p>
                 </div>
               </div>
