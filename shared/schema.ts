@@ -77,5 +77,14 @@ export const insertProgramSchema = createInsertSchema(programs).omit({
 export type InsertRegistration = z.infer<typeof insertRegistrationSchema>;
 export type Registration = typeof registrations.$inferSelect;
 
+// Public registration type that excludes sensitive personal information
+export type PublicRegistration = Omit<Registration, 'aadharNumber' | 'phoneNumber'>;
+
+// Schema for public registration data
+export const publicRegistrationSchema = insertRegistrationSchema.omit({
+  aadharNumber: true,
+  phoneNumber: true
+});
+
 export type InsertProgram = z.infer<typeof insertProgramSchema>;
 export type Program = typeof programs.$inferSelect;

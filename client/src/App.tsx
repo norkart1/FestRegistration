@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { GraduationCap, UserPlus, BarChart3, LogOut, Menu, Settings, X } from "lucide-react";
 import Login from "@/pages/login";
+import Home from "@/pages/home";
 import Registration from "@/pages/registration";
 import Dashboard from "@/pages/dashboard";
 import Reports from "@/pages/reports";
@@ -39,7 +40,7 @@ function Navigation({ currentPath }: { currentPath: string }) {
 
   const navItems = [
     { path: "/registration", label: "Registration", icon: UserPlus },
-    { path: "/", label: "Dashboard", icon: BarChart3 },
+    { path: "/dashboard", label: "Dashboard", icon: BarChart3 },
     { path: "/reports", label: "Reports", icon: BarChart3 },
     { path: "/admin/programs", label: "Programs", icon: Settings },
   ];
@@ -124,9 +125,9 @@ function AuthenticatedApp() {
       <main className="py-6">
         <Switch>
           <Route path="/registration" component={Registration} />
+          <Route path="/dashboard" component={Dashboard} />
           <Route path="/reports" component={Reports} />
           <Route path="/admin/programs" component={ProgramManagement} />
-          <Route path="/" component={Dashboard} />
           <Route component={NotFound} />
         </Switch>
       </main>
@@ -135,6 +136,7 @@ function AuthenticatedApp() {
 }
 
 function Router() {
+  const [location] = useLocation();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 
   const { data: authStatus } = useQuery({
@@ -151,6 +153,11 @@ function Router() {
       setIsAuthenticated(authStatus.authenticated);
     }
   }, [authStatus]);
+
+  // Public home page - no authentication required
+  if (location === "/") {
+    return <Home />;
+  }
 
   if (isAuthenticated === null) {
     return (

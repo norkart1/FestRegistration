@@ -140,6 +140,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Public search route (no authentication required)
+  app.get("/api/public/search", async (req, res) => {
+    try {
+      const { name } = req.query;
+      
+      // Validate search term
+      if (!name || typeof name !== 'string') {
+        return res.json([]);
+      }
+      
+      // Enforce minimum search length to prevent enumeration
+      const searchTerm = name.trim();
+      if (searchTerm.length < 3) {
+        return res.status(400).json({ 
+          message: "Search term must be at least 3 characters long" 
+        });
+      }
+      
+      const registrations = await storage.searchRegistrations(searchTerm);
+      
+      // Sanitize data by removing sensitive information
+      const publicRegistrations = registrations.map(reg => ({
+        id: reg.id,
+        fullName: reg.fullName,
+        place: reg.place,
+        darsName: reg.darsName,
+        darsPlace: reg.darsPlace,
+        usthaadName: reg.usthaadName,
+        category: reg.category,
+        programs: reg.programs,
+        createdAt: reg.createdAt,
+        updatedAt: reg.updatedAt
+      }));
+      
+      res.json(publicRegistrations);
+    } catch (error) {
+      console.error("Public search error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   // Registration routes
   app.post("/api/registrations", async (req, res) => {
     try {

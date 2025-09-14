@@ -1,6 +1,6 @@
 import { jsPDF } from 'jspdf';
 import { autoTable, UserOptions } from 'jspdf-autotable';
-import { Registration } from '@shared/schema';
+import { Registration, PublicRegistration } from '@shared/schema';
 
 // Utility function to set safe font
 const setSafeFont = (doc: jsPDF): void => {
@@ -120,6 +120,56 @@ export const generateCategoryReport = (registrations: Registration[], category: 
       6: { cellWidth: 50 },
       7: { cellWidth: 25 }
     }
+  } as UserOptions);
+
+  return doc;
+};
+
+// Generate PDF for public registration data (excludes sensitive information)
+export const generatePublicRegistrationPDF = (registration: PublicRegistration) => {
+  const doc = new jsPDF({
+    orientation: 'landscape',
+    unit: 'mm',
+    format: 'a4'
+  });
+
+  // Header with safe font
+  setSafeFont(doc);
+  doc.setFontSize(18);
+  doc.text('Registration Management System', 148.5, 20, { align: 'center' });
+  
+  doc.setFontSize(14);
+  doc.text('Student Registration Details', 148.5, 30, { align: 'center' });
+
+  // Student Information (excluding sensitive data)
+  const studentData = [
+    ['Full Name', registration.fullName],
+    ['Place', registration.place],
+    ['Student ID', registration.id.substring(0, 8) + '...'],
+    ['Category', registration.category.toUpperCase()],
+    ['Dars Name', registration.darsName],
+    ['Dars Place', registration.darsPlace],
+    ['Usthaad Name', registration.usthaadName],
+    ['Programs', registration.programs.join(', ')],
+    ['Registration Date', new Date(registration.createdAt).toLocaleDateString()]
+  ];
+
+  autoTable(doc, {
+    startY: 50,
+    head: [['Field', 'Value']],
+    body: studentData,
+    styles: {
+      fontSize: 10,
+      cellPadding: 3
+    },
+    headStyles: {
+      fillColor: [59, 130, 246],
+      textColor: [255, 255, 255]
+    },
+    alternateRowStyles: {
+      fillColor: [248, 250, 252]
+    },
+    margin: { left: 20, right: 20 }
   } as UserOptions);
 
   return doc;
