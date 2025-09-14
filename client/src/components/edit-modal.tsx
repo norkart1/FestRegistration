@@ -14,31 +14,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Save, X } from "lucide-react";
 import { useState } from "react";
-
-const JUNIOR_PROGRAMS = {
-  stage: ["junior-hamd", "junior-nasheed", "junior-speech"],
-  nonStage: ["junior-quran-recitation", "junior-hadith", "junior-essay"]
-};
-
-const SENIOR_PROGRAMS = {
-  stage: ["senior-debate", "senior-oration", "senior-elocution"],
-  nonStage: ["senior-research", "senior-translation", "senior-calligraphy"]
-};
-
-const PROGRAM_LABELS = {
-  "junior-hamd": "Hamd",
-  "junior-nasheed": "Nasheed",
-  "junior-speech": "Speech",
-  "junior-quran-recitation": "Quran Recitation",
-  "junior-hadith": "Hadith",
-  "junior-essay": "Essay Writing",
-  "senior-debate": "Debate",
-  "senior-oration": "Oration",
-  "senior-elocution": "Elocution",
-  "senior-research": "Research Paper",
-  "senior-translation": "Translation",
-  "senior-calligraphy": "Calligraphy"
-};
+import { JUNIOR_PROGRAMS, SENIOR_PROGRAMS, PROGRAM_LABELS, normalizeProgramIds } from "@shared/program-constants";
 
 interface EditModalProps {
   registration: Registration;
@@ -60,7 +36,7 @@ export function EditModal({ registration, onClose }: EditModalProps) {
       darsPlace: registration.darsPlace,
       usthaadName: registration.usthaadName,
       category: registration.category as "junior" | "senior",
-      programs: registration.programs,
+      programs: normalizeProgramIds(registration.programs),
     },
   });
 

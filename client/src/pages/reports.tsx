@@ -6,11 +6,21 @@ import { Users, GraduationCap, Download, FileText } from "lucide-react";
 import { generateCategoryReport, downloadPDF } from "@/lib/pdf-generator";
 import { Registration, Statistics } from "@shared/schema";
 import { useState } from "react";
+import { 
+  JUNIOR_PROGRAMS,
+  SENIOR_PROGRAMS,
+  PROGRAM_LABELS,
+  normalizeProgramIds,
+  getProgramLabel,
+  isStageProgram,
+  isNonStageProgram
+} from "@shared/program-constants";
+
 
 export default function Reports() {
-  const [customCategory, setCustomCategory] = useState("");
-  const [customProgramType, setCustomProgramType] = useState("");
-  const [customDateRange, setCustomDateRange] = useState("");
+  const [customCategory, setCustomCategory] = useState("all");
+  const [customProgramType, setCustomProgramType] = useState("all");
+  const [customDateRange, setCustomDateRange] = useState("all");
 
   const { data: allRegistrations } = useQuery<Registration[]>({
     queryKey: ["/api/registrations"],
@@ -39,21 +49,16 @@ export default function Reports() {
     let filteredRegistrations = allRegistrations || [];
 
     // Apply category filter
-    if (customCategory && customCategory !== "all") {
+    if (customCategory !== "all") {
       filteredRegistrations = filteredRegistrations.filter(r => r.category === customCategory);
     }
 
-    // Apply program type filter
-    if (customProgramType && customProgramType !== "all") {
+    // Apply program type filter with backward compatibility
+    if (customProgramType !== "all") {
       filteredRegistrations = filteredRegistrations.filter(r => {
-        const hasStagePrograms = r.programs.some(p => 
-          p.includes('hamd') || p.includes('nasheed') || p.includes('speech') || 
-          p.includes('debate') || p.includes('oration') || p.includes('elocution')
-        );
-        const hasNonStagePrograms = r.programs.some(p => 
-          p.includes('recitation') || p.includes('hadith') || p.includes('essay') ||
-          p.includes('research') || p.includes('translation') || p.includes('calligraphy')
-        );
+        const normalizedPrograms = normalizeProgramIds(r.programs);
+        const hasStagePrograms = normalizedPrograms.some(isStageProgram);
+        const hasNonStagePrograms = normalizedPrograms.some(isNonStageProgram);
 
         if (customProgramType === 'stage') return hasStagePrograms;
         if (customProgramType === 'non-stage') return hasNonStagePrograms;
@@ -62,7 +67,7 @@ export default function Reports() {
     }
 
     // Apply date range filter
-    if (customDateRange && customDateRange !== "all") {
+    if (customDateRange !== "all") {
       const now = new Date();
       let filterDate = new Date();
 
@@ -95,7 +100,7 @@ export default function Reports() {
       return;
     }
 
-    const reportCategory = customCategory || 'custom';
+    const reportCategory = customCategory === 'all' ? 'custom' : customCategory;
     const doc = generateCategoryReport(filteredRegistrations, reportCategory as 'junior' | 'senior');
     downloadPDF(doc, `custom-report-${new Date().toISOString().split('T')[0]}.pdf`);
   };
@@ -103,20 +108,16 @@ export default function Reports() {
   const getStageParticipants = (category: 'junior' | 'senior') => {
     const registrations = category === 'junior' ? juniorRegistrations : seniorRegistrations;
     return registrations.filter(r => {
-      return r.programs.some(p => 
-        p.includes('hamd') || p.includes('nasheed') || p.includes('speech') || 
-        p.includes('debate') || p.includes('oration') || p.includes('elocution')
-      );
+      const normalizedPrograms = normalizeProgramIds(r.programs);
+      return normalizedPrograms.some(isStageProgram);
     }).length;
   };
 
   const getNonStageParticipants = (category: 'junior' | 'senior') => {
     const registrations = category === 'junior' ? juniorRegistrations : seniorRegistrations;
     return registrations.filter(r => {
-      return r.programs.some(p => 
-        p.includes('recitation') || p.includes('hadith') || p.includes('essay') ||
-        p.includes('research') || p.includes('translation') || p.includes('calligraphy')
-      );
+      const normalizedPrograms = normalizeProgramIds(r.programs);
+      return normalizedPrograms.some(isNonStageProgram);
     }).length;
   };
 
@@ -202,13 +203,15 @@ export default function Reports() {
             <div>
               <h4 className="font-medium text-card-foreground mb-4">Junior Programs</h4>
               <div className="space-y-3">
-                {['Hamd', 'Nasheed', 'Speech', 'Quran Recitation', 'Hadith', 'Essay Writing'].map((program) => {
-                  const count = juniorRegistrations.filter(r => 
-                    r.programs.some(p => p.toLowerCase().includes(program.toLowerCase().replace(/\s+/g, '-')))
-                  ).length;
+                {[...JUNIOR_PROGRAMS.stage, ...JUNIOR_PROGRAMS.nonStage].map((programId) => {
+                  const programName = getProgramLabel(programId);
+                  const count = juniorRegistrations.filter(r => {
+                    const normalizedPrograms = normalizeProgramIds(r.programs);
+                    return normalizedPrograms.includes(programId);
+                  }).length;
                   return (
-                    <div key={program} className="flex justify-between items-center">
-                      <span className="text-sm text-muted-foreground">{program}</span>
+                    <div key={programId} className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">{programName}</span>
                       <span className="text-sm font-medium text-card-foreground">{count} students</span>
                     </div>
                   );
@@ -219,13 +222,15 @@ export default function Reports() {
             <div>
               <h4 className="font-medium text-card-foreground mb-4">Senior Programs</h4>
               <div className="space-y-3">
-                {['Debate', 'Oration', 'Elocution', 'Research Paper', 'Translation', 'Calligraphy'].map((program) => {
-                  const count = seniorRegistrations.filter(r => 
-                    r.programs.some(p => p.toLowerCase().includes(program.toLowerCase().replace(/\s+/g, '-')))
-                  ).length;
+                {[...SENIOR_PROGRAMS.stage, ...SENIOR_PROGRAMS.nonStage].map((programId) => {
+                  const programName = getProgramLabel(programId);
+                  const count = seniorRegistrations.filter(r => {
+                    const normalizedPrograms = normalizeProgramIds(r.programs);
+                    return normalizedPrograms.includes(programId);
+                  }).length;
                   return (
-                    <div key={program} className="flex justify-between items-center">
-                      <span className="text-sm text-muted-foreground">{program}</span>
+                    <div key={programId} className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">{programName}</span>
                       <span className="text-sm font-medium text-card-foreground">{count} students</span>
                     </div>
                   );

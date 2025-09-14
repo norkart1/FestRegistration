@@ -11,6 +11,7 @@ import { PrintView } from "./print-view.tsx";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { generateRegistrationPDF, downloadPDF } from "@/lib/pdf-generator";
+import { getProgramLabel, normalizeProgramIds } from "@shared/program-constants";
 
 interface RegistrationTableProps {
   registrations: Registration[];
@@ -69,14 +70,8 @@ export function RegistrationTable({ registrations, isLoading }: RegistrationTabl
   };
 
   const formatPrograms = (programs: string[]) => {
-    return programs.map(program => {
-      // Convert program IDs to readable names
-      return program
-        .split('-')
-        .slice(1) // Remove 'junior' or 'senior' prefix
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(' ');
-    });
+    const normalizedPrograms = normalizeProgramIds(programs);
+    return normalizedPrograms.map(program => getProgramLabel(program));
   };
 
   if (isLoading) {
