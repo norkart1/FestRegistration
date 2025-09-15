@@ -2,6 +2,8 @@ import { Registration } from "@shared/schema";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Star, Award } from "lucide-react";
+import { getProgramLabel, categorizePrograms } from "@shared/program-constants";
 
 interface ViewModalProps {
   registration: Registration;
@@ -9,15 +11,6 @@ interface ViewModalProps {
 }
 
 export function ViewModal({ registration, onClose }: ViewModalProps) {
-  const formatPrograms = (programs: string[]) => {
-    return programs.map(program => {
-      return program
-        .split('-')
-        .slice(1)
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(' ');
-    });
-  };
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
@@ -93,13 +86,43 @@ export function ViewModal({ registration, onClose }: ViewModalProps) {
               </div>
               <div>
                 <label className="block text-sm font-medium text-muted-foreground mb-2">Selected Programs</label>
-                <div className="flex flex-wrap gap-2">
-                  {formatPrograms(registration.programs).map((program, index) => (
-                    <Badge key={index} variant="outline">
-                      {program}
-                    </Badge>
-                  ))}
-                </div>
+                {(() => {
+                  const categorizedPrograms = categorizePrograms(registration.programs);
+                  return (
+                    <div className="space-y-3">
+                      {categorizedPrograms.stage.length > 0 && (
+                        <div>
+                          <div className="flex items-center gap-1 mb-2">
+                            <Star className="h-3 w-3 text-yellow-500" />
+                            <span className="text-xs font-medium text-muted-foreground">Stage Programs</span>
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            {categorizedPrograms.stage.map((program, index) => (
+                              <Badge key={index} variant="default">
+                                {getProgramLabel(program)}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {categorizedPrograms.nonStage.length > 0 && (
+                        <div>
+                          <div className="flex items-center gap-1 mb-2">
+                            <Award className="h-3 w-3 text-blue-500" />
+                            <span className="text-xs font-medium text-muted-foreground">Non-Stage Programs</span>
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            {categorizedPrograms.nonStage.map((program, index) => (
+                              <Badge key={index} variant="secondary">
+                                {getProgramLabel(program)}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
             </CardContent>
           </Card>

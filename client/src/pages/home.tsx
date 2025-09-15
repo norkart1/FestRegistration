@@ -5,9 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Search, Download, GraduationCap, User, MapPin, Phone, Book, Users, LogIn, UserPlus } from "lucide-react";
+import { Search, Download, GraduationCap, User, MapPin, Phone, Book, Users, LogIn, UserPlus, Star, Award } from "lucide-react";
 import { PublicRegistration } from "@shared/schema";
 import { generatePublicRegistrationPDF, downloadPDF } from "@/lib/pdf-generator";
+import { getProgramLabel, categorizePrograms } from "@shared/program-constants";
 import { useToast } from "@/hooks/use-toast";
 
 interface Suggestion {
@@ -192,13 +193,6 @@ export default function Home() {
               </h1>
             </div>
             <div className="flex items-center space-x-2 sm:space-x-4">
-              <Link href="/registration">
-                <Button variant="outline" size="sm" data-testid="button-register">
-                  <UserPlus className="h-4 w-4 mr-1 sm:mr-2" />
-                  <span className="hidden sm:inline">Register</span>
-                  <span className="sm:hidden">Join</span>
-                </Button>
-              </Link>
               <Link href="/login">
                 <Button variant="default" size="sm" data-testid="button-admin-login">
                   <LogIn className="h-4 w-4 mr-1 sm:mr-2" />
@@ -311,10 +305,6 @@ export default function Home() {
                           <span className="font-medium">Place:</span>
                           <span>{student.place}</span>
                         </div>
-                        <div className="flex items-center gap-2 text-sm">
-                          <span className="font-medium">Student ID:</span>
-                          <span>{student.id.substring(0, 8)}...</span>
-                        </div>
                       </div>
 
                       <Separator />
@@ -340,13 +330,43 @@ export default function Home() {
                           <Users className="h-4 w-4" />
                           Programs
                         </h4>
-                        <div className="flex flex-wrap gap-1">
-                          {student.programs.map((program, index) => (
-                            <Badge key={index} variant="outline" className="text-xs">
-                              {program}
-                            </Badge>
-                          ))}
-                        </div>
+                        {(() => {
+                          const categorizedPrograms = categorizePrograms(student.programs);
+                          return (
+                            <div className="space-y-2">
+                              {categorizedPrograms.stage.length > 0 && (
+                                <div>
+                                  <div className="flex items-center gap-1 mb-1">
+                                    <Star className="h-3 w-3 text-yellow-500" />
+                                    <span className="text-xs font-medium text-muted-foreground">Stage</span>
+                                  </div>
+                                  <div className="flex flex-wrap gap-1">
+                                    {categorizedPrograms.stage.map((program, index) => (
+                                      <Badge key={index} variant="default" className="text-xs">
+                                        {getProgramLabel(program)}
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                              {categorizedPrograms.nonStage.length > 0 && (
+                                <div>
+                                  <div className="flex items-center gap-1 mb-1">
+                                    <Award className="h-3 w-3 text-blue-500" />
+                                    <span className="text-xs font-medium text-muted-foreground">Non-Stage</span>
+                                  </div>
+                                  <div className="flex flex-wrap gap-1">
+                                    {categorizedPrograms.nonStage.map((program, index) => (
+                                      <Badge key={index} variant="secondary" className="text-xs">
+                                        {getProgramLabel(program)}
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })()}
                       </div>
 
                       <Separator />

@@ -1,5 +1,6 @@
 import { Registration } from "@shared/schema";
 import { useEffect } from "react";
+import { getProgramLabel, categorizePrograms } from "@shared/program-constants";
 
 interface PrintViewProps {
   registration: Registration;
@@ -17,15 +18,6 @@ export function PrintView({ registration, onClose }: PrintViewProps) {
     return () => clearTimeout(timer);
   }, [onClose]);
 
-  const formatPrograms = (programs: string[]) => {
-    return programs.map(program => {
-      return program
-        .split('-')
-        .slice(1)
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(' ');
-    });
-  };
 
   return (
     <div className="hidden print:block print-landscape p-8">
@@ -71,7 +63,18 @@ export function PrintView({ registration, onClose }: PrintViewProps) {
             </tr>
             <tr>
               <td className="border border-gray-300 px-4 py-2 font-medium bg-gray-100">Programs</td>
-              <td className="border border-gray-300 px-4 py-2">{formatPrograms(registration.programs).join(', ')}</td>
+              <td className="border border-gray-300 px-4 py-2">
+                {(() => {
+                  const categorizedPrograms = categorizePrograms(registration.programs);
+                  const stagePrograms = categorizedPrograms.stage.map(p => getProgramLabel(p));
+                  const nonStagePrograms = categorizedPrograms.nonStage.map(p => getProgramLabel(p));
+                  const allPrograms = [
+                    ...(stagePrograms.length > 0 ? [`Stage: ${stagePrograms.join(', ')}`] : []),
+                    ...(nonStagePrograms.length > 0 ? [`Non-Stage: ${nonStagePrograms.join(', ')}`] : [])
+                  ];
+                  return allPrograms.join(' | ');
+                })()}
+              </td>
             </tr>
             <tr>
               <td className="border border-gray-300 px-4 py-2 font-medium bg-gray-100">Registration Date</td>

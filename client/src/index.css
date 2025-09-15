@@ -11,7 +11,7 @@
   --card-foreground: hsl(210, 40%, 8%);
   --popover: hsl(0, 0%, 100%);
   --popover-foreground: hsl(210, 40%, 8%);
-  --primary: hsl(214, 84%, 56%);
+  --primary: hsl(136.07deg 85.12% 42.16%);
   --primary-foreground: hsl(0, 0%, 98%);
   --secondary: hsl(210, 40%, 96%);
   --secondary-foreground: hsl(215, 16%, 47%);
@@ -37,9 +37,9 @@
   --sidebar-accent-foreground: hsl(203.8863, 88.2845%, 53.1373%);
   --sidebar-border: hsl(205.0000, 25.0000%, 90.5882%);
   --sidebar-ring: hsl(202.8169, 89.1213%, 53.1373%);
-  --font-sans: 'Inter', sans-serif;
-  --font-serif: Georgia, serif;
-  --font-mono: Menlo, monospace;
+  --font-sans: 'Roboto', sans-serif;
+  --font-serif: 'Roboto', sans-serif;
+  --font-mono: 'Roboto', sans-serif;
   --radius: 0.5rem;
   --shadow-2xs: 0px 2px 0px 0px hsl(202.8169, 89.1213%, 53.1373%, 0.00);
   --shadow-xs: 0px 2px 0px 0px hsl(202.8169, 89.1213%, 53.1373%, 0.00);

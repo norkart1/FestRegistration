@@ -7,13 +7,14 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { GraduationCap, UserPlus, BarChart3, LogOut, Menu, Settings, X } from "lucide-react";
+import { GraduationCap, UserPlus, BarChart3, LogOut, Menu, Settings, X, Activity } from "lucide-react";
 import Login from "@/pages/login";
 import Home from "@/pages/home";
 import Registration from "@/pages/registration";
 import Dashboard from "@/pages/dashboard";
 import Reports from "@/pages/reports";
 import ProgramManagement from "@/pages/program-management";
+import Status from "@/pages/status";
 import NotFound from "@/pages/not-found";
 import { authApi } from "@/lib/auth";
 import { useToast } from "@/hooks/use-toast";
@@ -43,6 +44,7 @@ function Navigation({ currentPath }: { currentPath: string }) {
     { path: "/dashboard", label: "Dashboard", icon: BarChart3 },
     { path: "/reports", label: "Reports", icon: BarChart3 },
     { path: "/admin/programs", label: "Programs", icon: Settings },
+    { path: "/status", label: "Status", icon: Activity },
   ];
 
   const NavItems = ({ mobile = false }) => (
@@ -128,6 +130,7 @@ function AuthenticatedApp() {
           <Route path="/dashboard" component={Dashboard} />
           <Route path="/reports" component={Reports} />
           <Route path="/admin/programs" component={ProgramManagement} />
+          <Route path="/status" component={Status} />
           <Route component={NotFound} />
         </Switch>
       </main>
