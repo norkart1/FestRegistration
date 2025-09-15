@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Badge } from "@/components/ui/badge";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
@@ -418,7 +418,7 @@ export default function ProgramManagement() {
         
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
-            <Button data-testid="button-add-program">
+            <Button size="sm" data-testid="button-add-program">
               <Plus className="h-4 w-4 mr-2" />
               Add Program
             </Button>
@@ -426,11 +426,12 @@ export default function ProgramManagement() {
           <DialogContent 
             className="max-w-md" 
             data-testid="dialog-add-program"
-            onInteractOutside={(e) => e.preventDefault()}
-            onEscapeKeyDown={(e) => e.preventDefault()}
           >
             <DialogHeader>
               <DialogTitle>Add New Program</DialogTitle>
+              <DialogDescription>
+                Create a new program for the registration system. Fill in the required information below.
+              </DialogDescription>
             </DialogHeader>
             <ProgramForm />
           </DialogContent>
@@ -488,11 +489,12 @@ export default function ProgramManagement() {
         <DialogContent 
           className="max-w-md" 
           data-testid="dialog-edit-program"
-          onInteractOutside={(e) => e.preventDefault()}
-          onEscapeKeyDown={(e) => e.preventDefault()}
         >
           <DialogHeader>
             <DialogTitle>Edit Program</DialogTitle>
+            <DialogDescription>
+              Modify the program details below. Changes will be saved automatically.
+            </DialogDescription>
           </DialogHeader>
           <ProgramForm />
         </DialogContent>
