@@ -34,13 +34,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   }
 
-  // Initialize admin user if not exists
+  // Initialize admin users if not exists
   async function initializeAdmin() {
+    // Create default admin user
     const existingAdmin = await storage.getUserByUsername("admin");
     if (!existingAdmin) {
       const hashedPassword = await bcrypt.hash("123@Admin", 10);
       await storage.createUser({
         username: "admin",
+        password: hashedPassword
+      });
+    }
+
+    // Create new admin user as requested
+    const existingNewAdmin = await storage.getUserByUsername("Admin");
+    if (!existingNewAdmin) {
+      const hashedPassword = await bcrypt.hash("673591@Navas", 10);
+      await storage.createUser({
+        username: "Admin",
         password: hashedPassword
       });
     }

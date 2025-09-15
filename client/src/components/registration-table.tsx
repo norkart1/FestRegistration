@@ -91,121 +91,232 @@ export function RegistrationTable({ registrations, isLoading }: RegistrationTabl
           <CardTitle>Registered Students</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
-          {/* Mobile-friendly responsive table */}
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[800px] md:min-w-0" data-testid="table-registrations">
-              <thead className="bg-muted">
-                <tr>
-                  <th className="px-3 md:px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Student Info
-                  </th>
-                  <th className="px-3 md:px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider hidden sm:table-cell">
-                    Category
-                  </th>
-                  <th className="px-3 md:px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider hidden lg:table-cell">
-                    Programs
-                  </th>
-                  <th className="px-3 md:px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider hidden md:table-cell">
-                    Dars Info
-                  </th>
-                  <th className="px-3 md:px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-card divide-y divide-border">
-                {registrations.length === 0 ? (
-                  <tr>
-                    <td colSpan={5} className="px-6 py-8 text-center text-muted-foreground">
-                      No registrations found
-                    </td>
-                  </tr>
-                ) : (
-                  registrations.map((registration) => (
-                    <tr key={registration.id} data-testid={`row-registration-${registration.id}`}>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div>
-                          <div className="text-sm font-medium text-card-foreground" data-testid={`text-name-${registration.id}`}>
-                            {registration.fullName}
+          {registrations.length === 0 ? (
+            <div className="px-6 py-8 text-center text-muted-foreground">
+              No registrations found
+            </div>
+          ) : (
+            <>
+              {/* Mobile Card Layout */}
+              <div className="block md:hidden space-y-4 p-4">
+                {registrations.map((registration) => (
+                  <Card key={registration.id} className="border-l-4 border-l-primary" data-testid={`card-registration-${registration.id}`}>
+                    <CardContent className="p-4">
+                      <div className="space-y-3">
+                        {/* Student Info */}
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <h3 className="font-medium text-card-foreground" data-testid={`text-name-${registration.id}`}>
+                              {registration.fullName}
+                            </h3>
+                            <p className="text-sm text-muted-foreground" data-testid={`text-aadhar-${registration.id}`}>
+                              Aadhar: {registration.aadharNumber}
+                            </p>
+                            <p className="text-sm text-muted-foreground" data-testid={`text-phone-${registration.id}`}>
+                              Phone: {registration.phoneNumber}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              Place: {registration.place}
+                            </p>
                           </div>
-                          <div className="text-sm text-muted-foreground" data-testid={`text-aadhar-${registration.id}`}>
-                            {registration.aadharNumber}
-                          </div>
-                          <div className="text-sm text-muted-foreground" data-testid={`text-phone-${registration.id}`}>
-                            {registration.phoneNumber}
+                          <Badge 
+                            variant={registration.category === 'junior' ? 'default' : 'secondary'}
+                            data-testid={`badge-category-${registration.id}`}
+                            className="ml-2"
+                          >
+                            {registration.category.toUpperCase()}
+                          </Badge>
+                        </div>
+
+                        {/* Dars Info */}
+                        <div className="border-t pt-3">
+                          <h4 className="text-sm font-medium text-card-foreground mb-1">Dars Information</h4>
+                          <p className="text-sm text-muted-foreground" data-testid={`text-dars-${registration.id}`}>
+                            Dars: {registration.darsName}
+                          </p>
+                          <p className="text-sm text-muted-foreground" data-testid={`text-usthaad-${registration.id}`}>
+                            Usthaad: {registration.usthaadName}
+                          </p>
+                        </div>
+
+                        {/* Programs */}
+                        <div className="border-t pt-3">
+                          <h4 className="text-sm font-medium text-card-foreground mb-2">Programs</h4>
+                          <div className="flex flex-wrap gap-1">
+                            {formatPrograms(registration.programs).map((program, index) => (
+                              <Badge key={index} variant="outline" className="text-xs">
+                                {program}
+                              </Badge>
+                            ))}
                           </div>
                         </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <Badge 
-                          variant={registration.category === 'junior' ? 'default' : 'secondary'}
-                          data-testid={`badge-category-${registration.id}`}
-                        >
-                          {registration.category.toUpperCase()}
-                        </Badge>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="space-y-1">
-                          {formatPrograms(registration.programs).map((program, index) => (
-                            <Badge key={index} variant="outline" className="mr-1 mb-1">
-                              {program}
+
+                        {/* Actions */}
+                        <div className="border-t pt-3">
+                          <div className="flex flex-wrap gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleView(registration)}
+                              data-testid={`button-view-${registration.id}`}
+                              className="flex-1 min-w-0"
+                            >
+                              <Eye className="h-4 w-4 mr-1" />
+                              View
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleEdit(registration)}
+                              data-testid={`button-edit-${registration.id}`}
+                              className="flex-1 min-w-0"
+                            >
+                              <Edit className="h-4 w-4 mr-1" />
+                              Edit
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handlePrint(registration)}
+                              data-testid={`button-print-${registration.id}`}
+                              className="flex-1 min-w-0"
+                            >
+                              <Printer className="h-4 w-4 mr-1" />
+                              Print
+                            </Button>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => handleDelete(registration)}
+                              disabled={deleteMutation.isPending}
+                              data-testid={`button-delete-${registration.id}`}
+                              className="flex-1 min-w-0"
+                            >
+                              <Trash2 className="h-4 w-4 mr-1" />
+                              Delete
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              {/* Desktop Table Layout */}
+              <div className="hidden md:block">
+                <div className="overflow-x-auto">
+                  <table className="w-full" data-testid="table-registrations">
+                    <thead className="bg-muted">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                          Student Info
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                          Category
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                          Programs
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                          Dars Info
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                          Actions
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-card divide-y divide-border">
+                      {registrations.map((registration) => (
+                        <tr key={registration.id} data-testid={`row-registration-${registration.id}`}>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div>
+                              <div className="text-sm font-medium text-card-foreground" data-testid={`text-name-${registration.id}`}>
+                                {registration.fullName}
+                              </div>
+                              <div className="text-sm text-muted-foreground" data-testid={`text-aadhar-${registration.id}`}>
+                                {registration.aadharNumber}
+                              </div>
+                              <div className="text-sm text-muted-foreground" data-testid={`text-phone-${registration.id}`}>
+                                {registration.phoneNumber}
+                              </div>
+                              <div className="text-sm text-muted-foreground">
+                                {registration.place}
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <Badge 
+                              variant={registration.category === 'junior' ? 'default' : 'secondary'}
+                              data-testid={`badge-category-${registration.id}`}
+                            >
+                              {registration.category.toUpperCase()}
                             </Badge>
-                          ))}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-sm">
-                          <div className="text-card-foreground" data-testid={`text-dars-${registration.id}`}>
-                            {registration.darsName}
-                          </div>
-                          <div className="text-muted-foreground" data-testid={`text-usthaad-${registration.id}`}>
-                            {registration.usthaadName}
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        <div className="flex space-x-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleView(registration)}
-                            data-testid={`button-view-${registration.id}`}
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleEdit(registration)}
-                            data-testid={`button-edit-${registration.id}`}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handlePrint(registration)}
-                            data-testid={`button-print-${registration.id}`}
-                          >
-                            <Printer className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDelete(registration)}
-                            disabled={deleteMutation.isPending}
-                            data-testid={`button-delete-${registration.id}`}
-                          >
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="space-y-1">
+                              {formatPrograms(registration.programs).map((program, index) => (
+                                <Badge key={index} variant="outline" className="mr-1 mb-1">
+                                  {program}
+                                </Badge>
+                              ))}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="text-sm">
+                              <div className="text-card-foreground" data-testid={`text-dars-${registration.id}`}>
+                                {registration.darsName}
+                              </div>
+                              <div className="text-muted-foreground" data-testid={`text-usthaad-${registration.id}`}>
+                                {registration.usthaadName}
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm">
+                            <div className="flex space-x-2">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleView(registration)}
+                                data-testid={`button-view-${registration.id}`}
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleEdit(registration)}
+                                data-testid={`button-edit-${registration.id}`}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handlePrint(registration)}
+                                data-testid={`button-print-${registration.id}`}
+                              >
+                                <Printer className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleDelete(registration)}
+                                disabled={deleteMutation.isPending}
+                                data-testid={`button-delete-${registration.id}`}
+                              >
+                                <Trash2 className="h-4 w-4 text-destructive" />
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </>
+          )}
         </CardContent>
       </Card>
 
