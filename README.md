@@ -121,7 +121,7 @@ PORT="5000"
 | `DATABASE_URL` | ✅ Yes | None | PostgreSQL connection string |
 | `SESSION_SECRET` | ⚠️ Production | Generated | Secure session encryption key |
 | `ADMIN_USERNAME` | ❌ No | "admin" | Primary admin username |
-| `ADMIN_PASSWORD` | ❌ No | "123@Admin" | Primary admin password |
+| `ADMIN_PASSWORD` | ❌ No | "" | Primary admin password |
 | `ADMIN2_USERNAME` | ❌ No | None | Secondary admin username |
 | `ADMIN2_PASSWORD` | ❌ No | None | Secondary admin password |
 | `NODE_ENV` | ❌ No | "development" | Application environment |
