@@ -14,12 +14,17 @@ declare module "express-session" {
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Configure session middleware
+  // Ensure session secret is provided
+  if (!process.env.SESSION_SECRET && process.env.NODE_ENV !== 'development') {
+    throw new Error('SESSION_SECRET environment variable is required in production');
+  }
+
   app.use(session({
-    secret: process.env.SESSION_SECRET || 'default-secret-key',
+    secret: process.env.SESSION_SECRET || 'dev-secret-key-change-in-production',
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: false, // Set to true in production with HTTPS
+      secure: process.env.NODE_ENV === 'production', // Auto-configure based on environment
       httpOnly: true,
       maxAge: 24 * 60 * 60 * 1000 // 24 hours
     }
@@ -34,26 +39,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   }
 
-  // Initialize admin users if not exists
+  // Initialize admin users if not exists (development only or with env vars)
   async function initializeAdmin() {
-    // Create default admin user
-    const existingAdmin = await storage.getUserByUsername("admin");
-    if (!existingAdmin) {
-      const hashedPassword = await bcrypt.hash("123@Admin", 10);
-      await storage.createUser({
-        username: "admin",
-        password: hashedPassword
-      });
+    // Only create admin users in development mode or when explicitly configured
+    if (process.env.NODE_ENV === 'production' && !process.env.ADMIN_USERNAME) {
+      console.log('Production mode: Admin users must be created manually or via ADMIN_USERNAME/ADMIN_PASSWORD env vars');
+      return;
     }
 
-    // Create new admin user as requested
-    const existingNewAdmin = await storage.getUserByUsername("Admin");
-    if (!existingNewAdmin) {
-      const hashedPassword = await bcrypt.hash("673591@Navas", 10);
+    // Create default admin user
+    const defaultUsername = process.env.ADMIN_USERNAME || "admin";
+    const defaultPassword = process.env.ADMIN_PASSWORD || "123@Admin";
+    
+    const existingAdmin = await storage.getUserByUsername(defaultUsername);
+    if (!existingAdmin) {
+      const hashedPassword = await bcrypt.hash(defaultPassword, 10);
       await storage.createUser({
-        username: "Admin",
+        username: defaultUsername,
         password: hashedPassword
       });
+      console.log(`Admin user '${defaultUsername}' created`);
+    }
+
+    // Create secondary admin user if specified
+    if (process.env.ADMIN2_USERNAME && process.env.ADMIN2_PASSWORD) {
+      const existingAdmin2 = await storage.getUserByUsername(process.env.ADMIN2_USERNAME);
+      if (!existingAdmin2) {
+        const hashedPassword = await bcrypt.hash(process.env.ADMIN2_PASSWORD, 10);
+        await storage.createUser({
+          username: process.env.ADMIN2_USERNAME,
+          password: hashedPassword
+        });
+        console.log(`Secondary admin user '${process.env.ADMIN2_USERNAME}' created`);
+      }
+    }
+
+    // Development warning for missing session secret
+    if (!process.env.SESSION_SECRET && process.env.NODE_ENV === 'development') {
+      console.warn('WARNING: Using default session secret in development. Set SESSION_SECRET environment variable for production.');
     }
   }
 

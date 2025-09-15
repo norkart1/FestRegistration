@@ -92,75 +92,161 @@ A comprehensive full-stack registration management system built for educational 
 
 ### Required Environment Variables
 
+Create a `.env` file in the root directory with the following variables:
+
 ```bash
-# Database Configuration
+# Database Configuration (REQUIRED)
 DATABASE_URL="postgresql://username:password@host:port/database"
 
-# Session Security
-SESSION_SECRET="your-secure-session-secret-key-here"
+# Session Security (REQUIRED for production)
+SESSION_SECRET="your-secure-random-session-secret-key-here"
 
-# Optional: Node Environment
+# Admin User Configuration (Optional - for automated setup)
+ADMIN_USERNAME="admin"
+ADMIN_PASSWORD="your-secure-admin-password"
+ADMIN2_USERNAME="Admin" 
+ADMIN2_PASSWORD="your-second-admin-password"
+
+# Environment (Optional - defaults to development)
 NODE_ENV="development" # or "production"
 
-# Optional: Server Port (defaults to 5000)
+# Server Port (Optional - defaults to 5000)
 PORT="5000"
 ```
 
-### Database Configuration
-```bash
-# Connection string format
-DATABASE_URL="postgresql://[username]:[password]@[host]:[port]/[database]?[parameters]"
+### Environment Variable Details
 
-# Example for local development
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `DATABASE_URL` | ✅ Yes | None | PostgreSQL connection string |
+| `SESSION_SECRET` | ⚠️ Production | Generated | Secure session encryption key |
+| `ADMIN_USERNAME` | ❌ No | "admin" | Primary admin username |
+| `ADMIN_PASSWORD` | ❌ No | "123@Admin" | Primary admin password |
+| `ADMIN2_USERNAME` | ❌ No | None | Secondary admin username |
+| `ADMIN2_PASSWORD` | ❌ No | None | Secondary admin password |
+| `NODE_ENV` | ❌ No | "development" | Application environment |
+| `PORT` | ❌ No | "5000" | Server port number |
+
+### Database Configuration Examples
+
+```bash
+# Neon Serverless PostgreSQL (Recommended)
+DATABASE_URL="postgresql://user:pass@ep-example.us-east-1.aws.neon.tech/dbname?sslmode=require"
+
+# Local PostgreSQL
 DATABASE_URL="postgresql://postgres:password@localhost:5432/registration_db"
 
-# Example for Neon (serverless PostgreSQL)
-DATABASE_URL="postgresql://user:pass@ep-example.us-east-1.aws.neon.tech/dbname?sslmode=require"
+# Railway PostgreSQL
+DATABASE_URL="postgresql://postgres:pass@containers-us-west-xx.railway.app:xxxx/railway"
+
+# Supabase PostgreSQL
+DATABASE_URL="postgresql://postgres:pass@db.xxx.supabase.co:5432/postgres"
+```
+
+### Security Configuration
+
+```bash
+# Generate secure session secret (recommended)
+SESSION_SECRET="$(openssl rand -base64 32)"
+
+# Or use a secure random string
+SESSION_SECRET="your-very-long-random-string-at-least-32-characters"
 ```
 
 ## 🚀 Installation & Setup
 
 ### Prerequisites
 - Node.js 18+ 
-- PostgreSQL database
+- PostgreSQL database (Neon recommended)
 - npm or yarn package manager
 
-### Installation Steps
+### Quick Start (5 minutes)
 
-1. **Clone the Repository**
+1. **Clone and Install**
    ```bash
    git clone <repository-url>
    cd registration-management-system
-   ```
-
-2. **Install Dependencies**
-   ```bash
    npm install
    ```
 
-3. **Environment Configuration**
+2. **Environment Setup**
    ```bash
    # Create environment file
    cp .env.example .env
-   
-   # Edit environment variables
-   nano .env
+
+   # Set required variables (minimum)
+   echo "DATABASE_URL=your_postgresql_connection_string" >> .env
+   echo "SESSION_SECRET=$(openssl rand -base64 32)" >> .env
    ```
 
-4. **Database Setup**
+3. **Database Setup**
    ```bash
-   # Push database schema
+   # Create tables and seed data
    npm run db:push
    ```
 
-5. **Start Development Server**
+4. **Start Application**
    ```bash
    npm run dev
    ```
 
-6. **Access Application**
-   - Frontend: `http://localhost:5000`
-   - API Base: `http://localhost:5000/api`
+5. **Login**
+   - URL: `http://localhost:5000`
+   - Username: `admin`
+   - Password: `123@Admin`
+
+### Detailed Installation Steps
+
+1. **Database Provisioning**
+   
+   **Option A: Neon (Recommended)**
+   ```bash
+   # 1. Sign up at https://neon.tech
+   # 2. Create a new project
+   # 3. Copy the connection string
+   DATABASE_URL="postgresql://user:pass@ep-xxx.us-east-1.aws.neon.tech/dbname?sslmode=require"
+   ```
+
+   **Option B: Local PostgreSQL**
+   ```bash
+   # Install PostgreSQL locally
+   createdb registration_db
+   DATABASE_URL="postgresql://postgres:password@localhost:5432/registration_db"
+   ```
+
+2. **Environment Configuration**
+   ```bash
+   # Required for production
+   SESSION_SECRET="your-secure-session-secret"
+   
+   # Optional admin setup
+   ADMIN_USERNAME="your-admin-username"
+   ADMIN_PASSWORD="your-secure-password"
+   
+   # Optional secondary admin
+   ADMIN2_USERNAME="secondary-admin"
+   ADMIN2_PASSWORD="another-secure-password"
+   ```
+
+3. **Database Schema Creation**
+   ```bash
+   # Push schema to database
+   npm run db:push
+   
+   # If you get conflicts, force push
+   npm run db:push --force
+   ```
+
+4. **Verify Installation**
+   ```bash
+   # Check database connection
+   npm run check
+   
+   # Start development server
+   npm run dev
+   
+   # Open browser to http://localhost:5000
+   ```
 
 ### Production Deployment
 
@@ -176,19 +262,51 @@ DATABASE_URL="postgresql://user:pass@ep-example.us-east-1.aws.neon.tech/dbname?s
 
 ## 👥 Admin Access
 
-### Default Admin Accounts
+### Default Admin Accounts (Development)
 
-| Username | Password | Role |
-|----------|----------|------|
-| `admin` | `123@Admin` | Primary Administrator |
-| `Admin` | `673591@Navas` | Secondary Administrator |
+| Username | Password | Role | Notes |
+|----------|----------|------|-------|
+| `admin` | `123@Admin` | Primary Administrator | Default development account |
+| Custom | Custom | Configurable | Set via `ADMIN_USERNAME`/`ADMIN_PASSWORD` env vars |
+| Custom | Custom | Secondary Admin | Set via `ADMIN2_USERNAME`/`ADMIN2_PASSWORD` env vars |
+
+### Production Admin Setup
+
+```bash
+# Method 1: Environment Variables
+ADMIN_USERNAME="your-admin"
+ADMIN_PASSWORD="secure-password-here"
+
+# Method 2: Manual Database Creation (Recommended for Production)
+# In production, disable auto-creation and create admin users manually
+NODE_ENV="production"
+# Then use database tools to create admin users with bcrypt-hashed passwords
+```
+
+### Admin Login Process
+
+1. **Navigate to Application**
+   ```
+   http://localhost:5000
+   ```
+
+2. **Enter Credentials**
+   - Use configured admin username/password
+   - Default: `admin` / `123@Admin` (development only)
+
+3. **Access Admin Features**
+   - Dashboard with real-time statistics
+   - Student registration management
+   - Report generation and export
+   - Program configuration
 
 ### Admin Capabilities
-- **Student Management**: View, edit, delete registrations
-- **Report Generation**: Create and download detailed reports
-- **Program Management**: Configure available programs
-- **Analytics Dashboard**: Monitor registration statistics
-- **Data Export**: PDF generation with Malayalam support
+- **Student Management**: View, edit, delete registrations with mobile-responsive interface
+- **Report Generation**: Create and download detailed PDF reports with Malayalam program names
+- **Program Management**: Configure available programs by category and type
+- **Analytics Dashboard**: Monitor registration statistics and trends
+- **Data Export**: Professional PDF generation with categorized reports
+- **Search & Filter**: Advanced filtering by category, program type, and date ranges
 
 ## 📱 Mobile-First Design Principles
 
@@ -226,17 +344,40 @@ DATABASE_URL="postgresql://user:pass@ep-example.us-east-1.aws.neon.tech/dbname?s
 
 ```bash
 # Development
-npm run dev          # Start development server
-npm run build        # Build for production
+npm run dev          # Start development server with hot reload
+npm run build        # Build for production (frontend + backend)
 npm run start        # Start production server
 
 # Database
-npm run db:push      # Push schema changes
-npm run db:push --force  # Force push (data loss warning)
+npm run db:push      # Push schema changes to database
+npm run db:push --force  # Force push (WARNING: may cause data loss)
 
 # Code Quality
 npm run check        # TypeScript type checking
-npm run lint         # Code linting (if configured)
+
+# Troubleshooting
+npm run clean        # Clean build artifacts (if available)
+npm install          # Reinstall dependencies
+```
+
+### Common Development Tasks
+
+```bash
+# Reset database (development only)
+npm run db:push --force
+
+# View database schema
+# Use your database tool or Neon dashboard
+
+# Check application logs
+# Logs appear in terminal when running npm run dev
+
+# Update dependencies
+npm update
+
+# Check for security vulnerabilities
+npm audit
+npm audit fix
 ```
 
 ## 📋 API Endpoints
