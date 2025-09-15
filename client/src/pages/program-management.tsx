@@ -36,8 +36,8 @@ export default function ProgramManagement() {
       isActive: true,
       displayOrder: 0,
     },
-    mode: "onSubmit", // Only validate on submit to prevent focus loss
-    reValidateMode: "onSubmit", // Only re-validate on submit
+    mode: "onChange",
+    reValidateMode: "onChange"
   });
 
   const createMutation = useMutation({
@@ -292,9 +292,14 @@ export default function ProgramManagement() {
                     spellCheck="false"
                     lang="ml"
                     inputMode="text"
+                    dir="auto"
+                    className="font-malayalam"
+                    onFocus={(e) => e.stopPropagation()}
+                    onClick={(e) => e.stopPropagation()}
                     style={{ 
-                      fontFamily: "'Noto Sans Malayalam', 'Noto Sans', Arial, sans-serif",
-                      unicodeBidi: "isolate"
+                      fontFamily: "'Noto Sans Malayalam', 'Noto Sans', system-ui, Arial, sans-serif",
+                      unicodeBidi: "isolate",
+                      textAlign: "start"
                     }}
                   />
                 </FormControl>
@@ -418,14 +423,20 @@ export default function ProgramManagement() {
         
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
-            <Button size="sm" data-testid="button-add-program">
-              <Plus className="h-4 w-4 mr-2" />
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="h-8 px-3 text-xs"
+              data-testid="button-add-program"
+            >
+              <Plus className="h-3 w-3 mr-1" />
               Add Program
             </Button>
           </DialogTrigger>
           <DialogContent 
-            className="max-w-md" 
+            className="max-w-md overflow-hidden" 
             data-testid="dialog-add-program"
+            onOpenAutoFocus={(e) => e.preventDefault()}
           >
             <DialogHeader>
               <DialogTitle>Add New Program</DialogTitle>
@@ -487,8 +498,9 @@ export default function ProgramManagement() {
 
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent 
-          className="max-w-md" 
+          className="max-w-md overflow-hidden" 
           data-testid="dialog-edit-program"
+          onOpenAutoFocus={(e) => e.preventDefault()}
         >
           <DialogHeader>
             <DialogTitle>Edit Program</DialogTitle>

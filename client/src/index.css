@@ -1,8 +1,33 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Malayalam:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Malayalam font support */
+.font-malayalam {
+  font-family: 'Noto Sans Malayalam', 'Noto Sans', system-ui, -apple-system, sans-serif;
+  unicode-bidi: isolate;
+  text-rendering: optimizeLegibility;
+  direction: ltr;
+  text-align: start;
+}
+
+/* Prevent dialog focus issues */
+.dialog-content {
+  outline: none !important;
+  pointer-events: auto !important;
+}
+
+/* Mobile input improvements */
+@media (max-width: 768px) {
+  .mobile-input {
+    font-size: 16px !important; /* Prevent zoom on iOS */
+    -webkit-appearance: none;
+    appearance: none;
+  }
+}
 
 :root {
   --background: hsl(210, 40%, 98%);
