@@ -77,7 +77,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const hashedPassword = await bcrypt.hash(defaultPassword, 10);
       await storage.createUser({
         username: defaultUsername,
-        password: hashedPassword
+        password: hashedPassword,
+        role: "admin"
       });
       console.log(`Admin user '${defaultUsername}' created`);
     }
@@ -89,7 +90,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const hashedPassword = await bcrypt.hash(process.env.ADMIN2_PASSWORD, 10);
         await storage.createUser({
           username: process.env.ADMIN2_USERNAME,
-          password: hashedPassword
+          password: hashedPassword,
+          role: "admin"
         });
         console.log(`Secondary admin user '${process.env.ADMIN2_USERNAME}' created`);
       }
@@ -254,9 +256,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         id: reg.id,
         fullName: reg.fullName,
         place: reg.place,
-        darsName: reg.darsName,
-        darsPlace: reg.darsPlace,
-        usthaadName: reg.usthaadName,
+        teamName: reg.teamName,
         category: reg.category,
         programs: reg.programs,
         createdAt: reg.createdAt,

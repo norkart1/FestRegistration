@@ -94,8 +94,7 @@ export class DatabaseStorage implements IStorage {
       .where(
         or(
           ilike(registrations.fullName, `%${query}%`),
-          ilike(registrations.aadharNumber, `%${query}%`),
-          ilike(registrations.phoneNumber, `%${query}%`),
+          ilike(registrations.teamName, `%${query}%`),
           ilike(registrations.place, `%${query}%`)
         )
       )
