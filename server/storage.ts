@@ -1,4 +1,4 @@
-import { registrations, users, programs, type User, type InsertUser, type Registration, type InsertRegistration, type Program, type InsertProgram } from "@shared/schema";
+import { registrations, users, programs, teams, type User, type InsertUser, type Registration, type InsertRegistration, type Program, type InsertProgram, type Team, type InsertTeam } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, ilike, or, asc } from "drizzle-orm";
 
@@ -25,6 +25,15 @@ export interface IStorage {
   deleteProgram(id: string): Promise<boolean>;
   getProgramsByCategory(category: 'junior' | 'senior'): Promise<Program[]>;
   getActivePrograms(): Promise<Program[]>;
+  
+  // Team methods
+  createTeam(team: InsertTeam): Promise<Team>;
+  getTeams(): Promise<Team[]>;
+  getTeam(id: string): Promise<Team | undefined>;
+  getTeamByName(name: string): Promise<Team | undefined>;
+  updateTeam(id: string, team: Partial<InsertTeam>): Promise<Team | undefined>;
+  deleteTeam(id: string): Promise<boolean>;
+  getActiveTeams(): Promise<Team[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -153,6 +162,55 @@ export class DatabaseStorage implements IStorage {
     return db.select().from(programs)
       .where(eq(programs.isActive, true))
       .orderBy(asc(programs.category), asc(programs.displayOrder), asc(programs.name));
+  }
+
+  // Team methods implementation
+  async createTeam(team: InsertTeam): Promise<Team> {
+    const [newTeam] = await db
+      .insert(teams)
+      .values({
+        ...team,
+        updatedAt: new Date(),
+      })
+      .returning();
+    return newTeam;
+  }
+
+  async getTeams(): Promise<Team[]> {
+    return db.select().from(teams).orderBy(asc(teams.name));
+  }
+
+  async getTeam(id: string): Promise<Team | undefined> {
+    const [team] = await db.select().from(teams).where(eq(teams.id, id));
+    return team || undefined;
+  }
+
+  async getTeamByName(name: string): Promise<Team | undefined> {
+    const [team] = await db.select().from(teams).where(eq(teams.name, name));
+    return team || undefined;
+  }
+
+  async updateTeam(id: string, team: Partial<InsertTeam>): Promise<Team | undefined> {
+    const [updated] = await db
+      .update(teams)
+      .set({
+        ...team,
+        updatedAt: new Date(),
+      })
+      .where(eq(teams.id, id))
+      .returning();
+    return updated || undefined;
+  }
+
+  async deleteTeam(id: string): Promise<boolean> {
+    const result = await db.delete(teams).where(eq(teams.id, id));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  async getActiveTeams(): Promise<Team[]> {
+    return db.select().from(teams)
+      .where(eq(teams.isActive, true))
+      .orderBy(asc(teams.name));
   }
 }
 

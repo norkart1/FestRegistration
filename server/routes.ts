@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertRegistrationSchema, insertProgramSchema } from "@shared/schema";
+import { insertRegistrationSchema, insertProgramSchema, insertUserSchema, insertTeamSchema } from "@shared/schema";
 import bcrypt from "bcrypt";
 import session from "express-session";
 import connectPgSimple from "connect-pg-simple";
@@ -11,6 +11,11 @@ declare module "express-session" {
   interface SessionData {
     userId?: string;
     isAuthenticated?: boolean;
+    user?: {
+      id: string;
+      username: string;
+      role: string;
+    };
   }
 }
 
@@ -55,6 +60,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       next();
     } else {
       res.status(401).json({ message: "Authentication required" });
+    }
+  }
+
+  // Admin-only middleware
+  function requireAdmin(req: any, res: any, next: any) {
+    if (req.session?.isAuthenticated && req.session?.user?.role === 'admin') {
+      next();
+    } else {
+      res.status(403).json({ message: "Admin access required" });
+    }
+  }
+
+  // Team leader or admin middleware
+  function requireTeamLeaderOrAdmin(req: any, res: any, next: any) {
+    if (req.session?.isAuthenticated && 
+        (req.session?.user?.role === 'admin' || req.session?.user?.role === 'team_leader')) {
+      next();
+    } else {
+      res.status(403).json({ message: "Team leader or admin access required" });
     }
   }
 
@@ -176,8 +200,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       req.session.userId = user.id;
       req.session.isAuthenticated = true;
+      req.session.user = {
+        id: user.id,
+        username: user.username,
+        role: user.role
+      };
 
-      res.json({ message: "Login successful", user: { id: user.id, username: user.username } });
+      res.json({ message: "Login successful", user: { id: user.id, username: user.username, role: user.role } });
     } catch (error) {
       res.status(500).json({ message: "Internal server error" });
     }
@@ -190,10 +219,113 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.get("/api/auth/me", (req, res) => {
-    if (req.session?.isAuthenticated) {
-      res.json({ authenticated: true });
+    if (req.session?.isAuthenticated && req.session?.user) {
+      res.json({ 
+        authenticated: true, 
+        user: {
+          id: req.session.user.id,
+          username: req.session.user.username,
+          role: req.session.user.role
+        }
+      });
     } else {
       res.json({ authenticated: false });
+    }
+  });
+
+  // Team management routes (Admin only)
+  app.post("/api/admin/teams", requireAdmin, async (req, res) => {
+    try {
+      const validatedData = insertTeamSchema.parse(req.body);
+      const team = await storage.createTeam(validatedData);
+      res.status(201).json(team);
+    } catch (error: any) {
+      if (error.name === "ZodError") {
+        res.status(400).json({ message: "Validation error", errors: error.errors });
+      } else {
+        res.status(500).json({ message: "Internal server error" });
+      }
+    }
+  });
+
+  app.get("/api/teams", requireAuth, async (req, res) => {
+    try {
+      const teams = await storage.getActiveTeams();
+      res.json(teams);
+    } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.get("/api/admin/teams", requireAdmin, async (req, res) => {
+    try {
+      const teams = await storage.getTeams();
+      res.json(teams);
+    } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.put("/api/admin/teams/:id", requireAdmin, async (req, res) => {
+    try {
+      const validatedData = insertTeamSchema.parse(req.body);
+      const team = await storage.updateTeam(req.params.id, validatedData);
+      if (!team) {
+        return res.status(404).json({ message: "Team not found" });
+      }
+      res.json(team);
+    } catch (error: any) {
+      if (error.name === "ZodError") {
+        res.status(400).json({ message: "Validation error", errors: error.errors });
+      } else {
+        res.status(500).json({ message: "Internal server error" });
+      }
+    }
+  });
+
+  app.delete("/api/admin/teams/:id", requireAdmin, async (req, res) => {
+    try {
+      const deleted = await storage.deleteTeam(req.params.id);
+      if (!deleted) {
+        return res.status(404).json({ message: "Team not found" });
+      }
+      res.json({ message: "Team deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // User management routes (Admin only)
+  app.post("/api/admin/users", requireAdmin, async (req, res) => {
+    try {
+      const validatedData = insertUserSchema.parse(req.body);
+      
+      // Check if username already exists
+      const existingUser = await storage.getUserByUsername(validatedData.username);
+      if (existingUser) {
+        return res.status(400).json({ message: "Username already exists" });
+      }
+
+      // Hash password
+      const hashedPassword = await bcrypt.hash(validatedData.password, 10);
+      
+      const user = await storage.createUser({
+        ...validatedData,
+        password: hashedPassword
+      });
+
+      // Return user without password
+      res.status(201).json({
+        id: user.id,
+        username: user.username,
+        role: user.role
+      });
+    } catch (error: any) {
+      if (error.name === "ZodError") {
+        res.status(400).json({ message: "Validation error", errors: error.errors });
+      } else {
+        res.status(500).json({ message: "Internal server error" });
+      }
     }
   });
 
