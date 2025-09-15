@@ -2,10 +2,11 @@ import { useState } from "react";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { insertRegistrationSchema, type InsertRegistration, type Program } from "@shared/schema";
+import { insertRegistrationSchema, type InsertRegistration, type Program, type Team } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -23,12 +24,8 @@ export function RegistrationForm() {
     resolver: zodResolver(insertRegistrationSchema),
     defaultValues: {
       fullName: "",
-      aadharNumber: "",
       place: "",
-      phoneNumber: "",
-      darsName: "",
-      darsPlace: "",
-      usthaadName: "",
+      teamName: "",
       category: "junior",
       programs: [],
     },
@@ -75,6 +72,11 @@ export function RegistrationForm() {
     queryKey: ["/api/programs"],
   });
 
+  // Fetch teams from API
+  const { data: teams = [], isLoading: teamsLoading } = useQuery<Team[]>({
+    queryKey: ["/api/teams"],
+  });
+
   // Filter programs by category and group by type
   const availablePrograms = {
     stage: allPrograms.filter(p => p.category === watchedCategory && p.type === 'stage' && p.isActive),
@@ -99,15 +101,32 @@ export function RegistrationForm() {
               </FormItem>
             )}
           />
-          
+
           <FormField
             control={form.control}
-            name="aadharNumber"
+            name="teamName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Aadhar Number *</FormLabel>
+                <FormLabel>Team *</FormLabel>
                 <FormControl>
-                  <Input {...field} placeholder="Enter 12-digit Aadhar number" maxLength={12} data-testid="input-aadharNumber" />
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <SelectTrigger data-testid="select-teamName">
+                      <SelectValue placeholder="Select team" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {teamsLoading ? (
+                        <div className="p-2 text-center text-muted-foreground">Loading teams...</div>
+                      ) : teams.length === 0 ? (
+                        <div className="p-2 text-center text-muted-foreground">No teams available</div>
+                      ) : (
+                        teams.map((team) => (
+                          <SelectItem key={team.id} value={team.name} data-testid={`team-option-${team.name}`}>
+                            {team.name}
+                          </SelectItem>
+                        ))
+                      )}
+                    </SelectContent>
+                  </Select>
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -131,73 +150,6 @@ export function RegistrationForm() {
           />
         </div>
 
-        {/* Dars Information */}
-        <Card className="bg-muted">
-          <CardHeader>
-            <CardTitle>Dars Information</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid md:grid-cols-2 gap-6">
-              <FormField
-                control={form.control}
-                name="darsName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Dars Name *</FormLabel>
-                    <FormControl>
-                      <Input {...field} placeholder="Enter Dars name" data-testid="input-darsName" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="darsPlace"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Dars Place *</FormLabel>
-                    <FormControl>
-                      <Input {...field} placeholder="Enter Dars place" data-testid="input-darsPlace" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            
-            <div className="grid md:grid-cols-2 gap-6">
-              <FormField
-                control={form.control}
-                name="usthaadName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Usthaad Name *</FormLabel>
-                    <FormControl>
-                      <Input {...field} placeholder="Enter Usthaad name" data-testid="input-usthaadName" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="phoneNumber"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Usthad Number *</FormLabel>
-                    <FormControl>
-                      <Input {...field} placeholder="Enter Usthad's 10-digit number" maxLength={10} data-testid="input-phoneNumber" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-          </CardContent>
-        </Card>
 
         {/* Category Selection */}
         <Card className="bg-accent">
