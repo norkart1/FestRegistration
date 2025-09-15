@@ -140,6 +140,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Public search suggestions route (no authentication required)
+  app.get("/api/public/suggestions", async (req, res) => {
+    try {
+      const { name } = req.query;
+      
+      // Validate search term
+      if (!name || typeof name !== 'string') {
+        return res.json([]);
+      }
+      
+      // Enforce minimum search length to prevent enumeration
+      const searchTerm = name.trim();
+      if (searchTerm.length < 2) {
+        return res.json([]);
+      }
+      
+      const registrations = await storage.searchRegistrations(searchTerm);
+      
+      // Return only names for suggestions (limit to 10 results)
+      const suggestions = registrations
+        .slice(0, 10)
+        .map(reg => ({
+          id: reg.id,
+          fullName: reg.fullName,
+          place: reg.place
+        }));
+      
+      res.json(suggestions);
+    } catch (error) {
+      console.error("Public suggestions error:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   // Public search route (no authentication required)
   app.get("/api/public/search", async (req, res) => {
     try {

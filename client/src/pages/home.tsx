@@ -1,19 +1,122 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
+import { Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Search, Download, GraduationCap, User, MapPin, Phone, Book, Users } from "lucide-react";
+import { Search, Download, GraduationCap, User, MapPin, Phone, Book, Users, LogIn, UserPlus } from "lucide-react";
 import { PublicRegistration } from "@shared/schema";
 import { generatePublicRegistrationPDF, downloadPDF } from "@/lib/pdf-generator";
 import { useToast } from "@/hooks/use-toast";
+
+interface Suggestion {
+  id: string;
+  fullName: string;
+  place: string;
+}
 
 export default function Home() {
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState<PublicRegistration[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const suggestionsRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+
+  // Debounced search for suggestions
+  useEffect(() => {
+    const timeoutId = setTimeout(async () => {
+      if (searchTerm.trim().length >= 2) {
+        try {
+          const response = await fetch(`/api/public/suggestions?name=${encodeURIComponent(searchTerm)}`);
+          if (response.ok) {
+            const suggestionsData = await response.json();
+            setSuggestions(suggestionsData);
+            setShowSuggestions(true);
+            setSelectedSuggestionIndex(-1);
+          }
+        } catch (error) {
+          console.error("Suggestions fetch error:", error);
+        }
+      } else {
+        setSuggestions([]);
+        setShowSuggestions(false);
+      }
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchTerm]);
+
+  // Hide suggestions when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (suggestionsRef.current && !suggestionsRef.current.contains(event.target as Node)) {
+        setShowSuggestions(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Handle keyboard navigation
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (!showSuggestions || suggestions.length === 0) {
+      if (e.key === "Enter") {
+        handleSearch();
+      }
+      return;
+    }
+
+    switch (e.key) {
+      case "ArrowDown":
+        e.preventDefault();
+        setSelectedSuggestionIndex(prev => 
+          prev < suggestions.length - 1 ? prev + 1 : prev
+        );
+        break;
+      case "ArrowUp":
+        e.preventDefault();
+        setSelectedSuggestionIndex(prev => prev > -1 ? prev - 1 : -1);
+        break;
+      case "Enter":
+        e.preventDefault();
+        if (selectedSuggestionIndex >= 0) {
+          selectSuggestion(suggestions[selectedSuggestionIndex]);
+        } else {
+          handleSearch();
+        }
+        break;
+      case "Escape":
+        setShowSuggestions(false);
+        setSelectedSuggestionIndex(-1);
+        break;
+    }
+  };
+
+  const selectSuggestion = (suggestion: Suggestion) => {
+    setSearchTerm(suggestion.fullName);
+    setShowSuggestions(false);
+    setSelectedSuggestionIndex(-1);
+    // Trigger search with the selected name
+    setTimeout(() => handleSearch(), 100);
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchTerm(value);
+    
+    // Clear search results if input is cleared
+    if (!value.trim()) {
+      setSearchResults([]);
+      setSuggestions([]);
+      setShowSuggestions(false);
+    }
+  };
 
   const handleSearch = async () => {
     if (!searchTerm.trim()) {
@@ -88,6 +191,22 @@ export default function Home() {
                 <span className="sm:hidden">RMS</span>
               </h1>
             </div>
+            <div className="flex items-center space-x-2 sm:space-x-4">
+              <Link href="/registration">
+                <Button variant="outline" size="sm" data-testid="button-register">
+                  <UserPlus className="h-4 w-4 mr-1 sm:mr-2" />
+                  <span className="hidden sm:inline">Register</span>
+                  <span className="sm:hidden">Join</span>
+                </Button>
+              </Link>
+              <Link href="/login">
+                <Button variant="default" size="sm" data-testid="button-admin-login">
+                  <LogIn className="h-4 w-4 mr-1 sm:mr-2" />
+                  <span className="hidden sm:inline">Admin Login</span>
+                  <span className="sm:hidden">Login</span>
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </header>
@@ -105,15 +224,40 @@ export default function Home() {
             </CardHeader>
             <CardContent>
               <div className="flex flex-col sm:flex-row gap-4">
-                <div className="flex-1">
+                <div className="flex-1 relative" ref={suggestionsRef}>
                   <Input
+                    ref={inputRef}
                     placeholder="Enter student name to search..."
                     value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                    onChange={handleInputChange}
+                    onKeyDown={handleKeyDown}
+                    onFocus={() => setShowSuggestions(suggestions.length > 0)}
                     data-testid="input-search"
                     className="w-full"
                   />
+                  
+                  {/* Suggestions Dropdown */}
+                  {showSuggestions && suggestions.length > 0 && (
+                    <div className="absolute top-full left-0 right-0 z-10 mt-1 bg-card border border-border rounded-md shadow-lg max-h-60 overflow-auto">
+                      {suggestions.map((suggestion, index) => (
+                        <div
+                          key={suggestion.id}
+                          className={`px-4 py-2 cursor-pointer transition-colors ${
+                            index === selectedSuggestionIndex
+                              ? "bg-accent text-accent-foreground"
+                              : "hover:bg-muted"
+                          }`}
+                          onClick={() => selectSuggestion(suggestion)}
+                          data-testid={`suggestion-${index}`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="font-medium">{suggestion.fullName}</span>
+                            <span className="text-sm text-muted-foreground">{suggestion.place}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 <div className="flex gap-2">
                   <Button 
