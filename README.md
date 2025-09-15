@@ -192,8 +192,7 @@ SESSION_SECRET="your-very-long-random-string-at-least-32-characters"
 
 5. **Login**
    - URL: `http://localhost:5000`
-   - Username: `admin`
-   - Password: `123@Admin`
+   - Use configured admin credentials
 
 ### Detailed Installation Steps
 
@@ -262,13 +261,13 @@ SESSION_SECRET="your-very-long-random-string-at-least-32-characters"
 
 ## 👥 Admin Access
 
-### Default Admin Accounts (Development)
+### Admin Account Configuration
 
-| Username | Password | Role | Notes |
-|----------|----------|------|-------|
-| `admin` | `123@Admin` | Primary Administrator | Default development account |
-| Custom | Custom | Configurable | Set via `ADMIN_USERNAME`/`ADMIN_PASSWORD` env vars |
-| Custom | Custom | Secondary Admin | Set via `ADMIN2_USERNAME`/`ADMIN2_PASSWORD` env vars |
+| Type | Configuration | Notes |
+|------|---------------|-------|
+| Primary Admin | Set via `ADMIN_USERNAME`/`ADMIN_PASSWORD` env vars | Configurable admin account |
+| Secondary Admin | Set via `ADMIN2_USERNAME`/`ADMIN2_PASSWORD` env vars | Optional additional admin |
+| Development | Default credentials created if no env vars set | Change for production use |
 
 ### Production Admin Setup
 
@@ -292,7 +291,7 @@ NODE_ENV="production"
 
 2. **Enter Credentials**
    - Use configured admin username/password
-   - Default: `admin` / `123@Admin` (development only)
+   - Credentials are set via environment variables
 
 3. **Access Admin Features**
    - Dashboard with real-time statistics
