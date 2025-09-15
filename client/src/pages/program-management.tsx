@@ -36,6 +36,8 @@ export default function ProgramManagement() {
       isActive: true,
       displayOrder: 0,
     },
+    mode: "onSubmit", // Only validate on submit to prevent focus loss
+    reValidateMode: "onSubmit", // Only re-validate on submit
   });
 
   const createMutation = useMutation({
@@ -262,7 +264,13 @@ export default function ProgramManagement() {
               <FormItem>
                 <FormLabel>Program ID *</FormLabel>
                 <FormControl>
-                  <Input {...field} placeholder="e.g., junior-qiraat" data-testid="input-program-id" />
+                  <Input 
+                    {...field} 
+                    placeholder="e.g., junior-qiraat" 
+                    data-testid="input-program-id"
+                    autoComplete="off"
+                    spellCheck="false"
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -276,7 +284,19 @@ export default function ProgramManagement() {
               <FormItem>
                 <FormLabel>Program Name *</FormLabel>
                 <FormControl>
-                  <Input {...field} placeholder="e.g., ഖിറാഅത്ത്" data-testid="input-program-name" />
+                  <Input 
+                    {...field} 
+                    placeholder="e.g., ഖിറാഅത്ത്" 
+                    data-testid="input-program-name"
+                    autoComplete="off"
+                    spellCheck="false"
+                    lang="ml"
+                    inputMode="text"
+                    style={{ 
+                      fontFamily: "'Noto Sans Malayalam', 'Noto Sans', Arial, sans-serif",
+                      unicodeBidi: "isolate"
+                    }}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -403,7 +423,12 @@ export default function ProgramManagement() {
               Add Program
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-md" data-testid="dialog-add-program">
+          <DialogContent 
+            className="max-w-md" 
+            data-testid="dialog-add-program"
+            onInteractOutside={(e) => e.preventDefault()}
+            onEscapeKeyDown={(e) => e.preventDefault()}
+          >
             <DialogHeader>
               <DialogTitle>Add New Program</DialogTitle>
             </DialogHeader>
@@ -460,7 +485,12 @@ export default function ProgramManagement() {
       <ProgramTable programs={seniorPrograms} title="Senior Programs" />
 
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="max-w-md" data-testid="dialog-edit-program">
+        <DialogContent 
+          className="max-w-md" 
+          data-testid="dialog-edit-program"
+          onInteractOutside={(e) => e.preventDefault()}
+          onEscapeKeyDown={(e) => e.preventDefault()}
+        >
           <DialogHeader>
             <DialogTitle>Edit Program</DialogTitle>
           </DialogHeader>
