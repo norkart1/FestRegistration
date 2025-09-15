@@ -21,9 +21,12 @@ app.use((req, res, next) => {
     const duration = Date.now() - start;
     if (path.startsWith("/api")) {
       let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
-      if (capturedJsonResponse) {
+      
+      // In production, never log response bodies to prevent data leaks
+      if (capturedJsonResponse && process.env.NODE_ENV !== 'production') {
         logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
       }
+      // In production, only log method, path, status, and duration - no response bodies
 
       if (logLine.length > 80) {
         logLine = logLine.slice(0, 79) + "…";

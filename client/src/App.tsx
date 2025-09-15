@@ -98,20 +98,23 @@ function Navigation({ currentPath }: { currentPath: string }) {
           )}
 
           {/* Mobile Navigation */}
-          {isMobile && (
-            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="sm">
-                  <Menu className="h-5 w-5" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="right" className="w-[250px] sm:w-[300px]">
-                <div className="flex flex-col space-y-4 mt-6">
-                  <NavItems mobile />
-                </div>
-              </SheetContent>
-            </Sheet>
-          )}
+          <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+            <SheetTrigger asChild>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className={`${!isMobile ? 'hidden' : 'block'} md:hidden`}
+                aria-label="Open mobile menu"
+              >
+                <Menu className="h-5 w-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-[250px] sm:w-[300px]">
+              <div className="flex flex-col space-y-4 mt-6">
+                <NavItems mobile />
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
       </div>
     </header>

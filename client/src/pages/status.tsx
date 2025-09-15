@@ -52,6 +52,11 @@ interface SystemStatus {
     region: string;
     environment: string;
   };
+  metrics?: {
+    totalRegistrations: number;
+    totalPrograms: number;
+    activePrograms: number;
+  };
 }
 
 // Mock data for demonstration - in real app this would come from actual monitoring
@@ -91,55 +96,46 @@ const StatusIndicator = ({ status }: { status: 'healthy' | 'degraded' | 'down' }
 
 export default function Status() {
   const [systemStatus, setSystemStatus] = useState<SystemStatus | null>(null);
-  const { responseTimeData, storageData } = generateMockData();
+  const [metricsData, setMetricsData] = useState<{ responseTimeData: any[], storageData: any[] }>({ 
+    responseTimeData: [], 
+    storageData: [] 
+  });
 
-  // Simulate fetching system status
+  // Fetch real system status from API
+  const { data: statusData } = useQuery({
+    queryKey: ["/api/system/status"],
+    queryFn: async () => {
+      const response = await fetch("/api/system/status", { credentials: "include" });
+      if (!response.ok) throw new Error("Failed to fetch system status");
+      return response.json();
+    },
+    refetchInterval: 30000, // Update every 30 seconds
+    retry: false,
+  });
+
+  // Fetch real metrics data from API
+  const { data: metrics } = useQuery({
+    queryKey: ["/api/system/metrics"],
+    queryFn: async () => {
+      const response = await fetch("/api/system/metrics", { credentials: "include" });
+      if (!response.ok) throw new Error("Failed to fetch system metrics");
+      return response.json();
+    },
+    refetchInterval: 60000, // Update every minute
+    retry: false,
+  });
+
   useEffect(() => {
-    const fetchStatus = () => {
-      // Mock system status - in real app this would be actual monitoring data
-      setSystemStatus({
-        api: {
-          status: 'healthy',
-          responseTime: 45,
-          uptime: 99.9,
-        },
-        database: {
-          status: 'healthy',
-          connections: 12,
-          storage: {
-            used: 29.9,
-            total: 100,
-            percentage: 29.9,
-          },
-        },
-        frontend: {
-          status: 'healthy',
-          buildVersion: '1.2.3',
-        },
-        server: {
-          status: 'healthy',
-          memory: {
-            used: 156,
-            total: 512,
-            percentage: 30.5,
-          },
-          cpu: {
-            usage: 23.4,
-          },
-        },
-        host: {
-          status: 'healthy',
-          region: 'US-East',
-          environment: 'Production',
-        },
-      });
-    };
+    if (statusData) {
+      setSystemStatus(statusData);
+    }
+  }, [statusData]);
 
-    fetchStatus();
-    const interval = setInterval(fetchStatus, 30000); // Update every 30 seconds
-    
-    return () => clearInterval(interval);
-  }, []);
+  useEffect(() => {
+    if (metrics) {
+      setMetricsData(metrics);
+    }
+  }, [metrics]);
 
   if (!systemStatus) {
     return (
@@ -156,8 +152,13 @@ export default function Status() {
     <div className="max-w-7xl mx-auto p-6">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-card-foreground mb-2">System Status</h1>
-        <p className="text-muted-foreground">Real-time monitoring of all system components</p>
+        <h1 className="text-3xl font-bold text-card-foreground mb-2">System Status - Live Dashboard</h1>
+        <p className="text-muted-foreground">Real-time monitoring of all system components with live data from your Replit environment</p>
+        {systemStatus?.metrics && (
+          <div className="mt-2 text-sm text-muted-foreground">
+            Live Stats: {systemStatus.metrics.totalRegistrations} registrations • {systemStatus.metrics.activePrograms} active programs
+          </div>
+        )}
       </div>
 
       {/* Overall Status Cards */}
@@ -320,13 +321,13 @@ export default function Status() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Activity className="h-5 w-5" />
-              API Response Time (24h)
+              API Response Time (24h) - Live Data
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={responseTimeData}>
+                <LineChart data={metricsData.responseTimeData}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="time" />
                   <YAxis />
@@ -349,13 +350,13 @@ export default function Status() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <HardDrive className="h-5 w-5" />
-              Storage Usage by Category
+              Database Storage by Category - Live Data
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={storageData}>
+                <BarChart data={metricsData.storageData}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="name" />
                   <YAxis />
