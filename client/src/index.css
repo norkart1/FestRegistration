@@ -26,6 +26,36 @@
     font-size: 16px !important; /* Prevent zoom on iOS */
     -webkit-appearance: none;
     appearance: none;
+    -webkit-user-select: text;
+    user-select: text;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  
+  /* Prevent dialog from interfering with mobile keyboard */
+  [role="dialog"] {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+  
+  /* Ensure inputs maintain focus on mobile */
+  input:focus,
+  textarea:focus,
+  select:focus {
+    outline: none !important;
+    border-color: hsl(var(--ring)) !important;
+    box-shadow: 0 0 0 2px hsl(var(--ring)) !important;
+    -webkit-tap-highlight-color: transparent !important;
+  }
+  
+  /* Prevent mobile keyboard from causing layout issues */
+  .dialog-content input,
+  .dialog-content textarea {
+    position: relative;
+    z-index: 1000;
+    -webkit-user-select: text;
+    user-select: text;
+    touch-action: manipulation;
   }
 }
 

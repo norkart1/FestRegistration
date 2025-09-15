@@ -36,8 +36,11 @@ export default function ProgramManagement() {
       isActive: true,
       displayOrder: 0,
     },
-    mode: "onChange",
-    reValidateMode: "onChange"
+    mode: "onSubmit",
+    reValidateMode: "onSubmit",
+    shouldFocusError: false,
+    shouldUnregister: false,
+    shouldUseNativeValidation: false
   });
 
   const createMutation = useMutation({
@@ -270,6 +273,15 @@ export default function ProgramManagement() {
                     data-testid="input-program-id"
                     autoComplete="off"
                     spellCheck="false"
+                    autoFocus={false}
+                    onChange={(e) => {
+                      field.onChange(e);
+                      e.stopPropagation();
+                    }}
+                    onBlur={(e) => {
+                      field.onBlur();
+                      e.stopPropagation();
+                    }}
                   />
                 </FormControl>
                 <FormMessage />
@@ -293,13 +305,27 @@ export default function ProgramManagement() {
                     lang="ml"
                     inputMode="text"
                     dir="auto"
-                    className="font-malayalam"
-                    onFocus={(e) => e.stopPropagation()}
+                    autoFocus={false}
+                    className="font-malayalam mobile-input"
+                    onChange={(e) => {
+                      field.onChange(e);
+                      e.stopPropagation();
+                    }}
+                    onBlur={(e) => {
+                      field.onBlur();
+                      e.stopPropagation();
+                    }}
+                    onFocus={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                    }}
                     onClick={(e) => e.stopPropagation()}
                     style={{ 
                       fontFamily: "'Noto Sans Malayalam', 'Noto Sans', system-ui, Arial, sans-serif",
                       unicodeBidi: "isolate",
-                      textAlign: "start"
+                      textAlign: "start",
+                      fontSize: "16px",
+                      minHeight: "44px"
                     }}
                   />
                 </FormControl>
@@ -365,8 +391,19 @@ export default function ProgramManagement() {
                 <Input
                   {...field}
                   type="number"
-                  onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  autoFocus={false}
+                  onChange={(e) => {
+                    field.onChange(parseInt(e.target.value) || 0);
+                    e.stopPropagation();
+                  }}
+                  onBlur={(e) => {
+                    field.onBlur();
+                    e.stopPropagation();
+                  }}
                   data-testid="input-display-order"
+                  style={{ fontSize: "16px" }}
                 />
               </FormControl>
               <FormMessage />
@@ -410,33 +447,37 @@ export default function ProgramManagement() {
 
   return (
     <div className="max-w-6xl mx-auto p-6">
-      <div className="flex justify-between items-center mb-6">
-        <div>
+      <div className="flex justify-between items-start mb-6">
+        <div className="flex-1">
           <h1 className="text-3xl font-bold flex items-center gap-2" data-testid="title-program-management">
             <BookOpen className="h-8 w-8" />
             Program Management
           </h1>
-          <p className="text-muted-foreground mt-1">
-            Manage competition programs for junior and senior categories
-          </p>
         </div>
         
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
             <Button 
-              variant="outline" 
+              variant="default" 
               size="sm" 
-              className="h-8 px-3 text-xs"
+              className="h-9 px-2 text-sm whitespace-nowrap ml-4 flex-shrink-0"
               data-testid="button-add-program"
             >
-              <Plus className="h-3 w-3 mr-1" />
-              Add Program
+              <Plus className="h-4 w-4 mr-1" />
+              Add
             </Button>
           </DialogTrigger>
           <DialogContent 
-            className="max-w-md overflow-hidden" 
+            className="max-w-md overflow-hidden dialog-content" 
             data-testid="dialog-add-program"
             onOpenAutoFocus={(e) => e.preventDefault()}
+            onCloseAutoFocus={(e) => e.preventDefault()}
+            onInteractOutside={(e) => {
+              const target = e.target as Element;
+              if (target.closest('input, textarea, select')) {
+                e.preventDefault();
+              }
+            }}
           >
             <DialogHeader>
               <DialogTitle>Add New Program</DialogTitle>
